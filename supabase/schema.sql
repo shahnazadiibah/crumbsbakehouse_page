@@ -179,10 +179,11 @@ on conflict do nothing;
 -- Inserted in display order (the order page sorts zones by created_at).
 -- The "Grab Instant Car" zone name is matched by the app (substring "whole
 -- cake") to auto-enforce it for whole-cake orders — keep that phrase if you
--- rename it. See isWholeCakeItem/isMandatoryZone in OrderForm.tsx.
+-- rename it. See isWholeCakeItem/isMandatoryWholeCakeZone in src/lib/menuRules.ts.
 insert into delivery_zones (name, fee) values
   ('Grab Bike Sameday (Preferred)', 32000),
-  ('Grab Instant Car (Mandatory for whole cake delivery. Confirm fee with admin.)', 0),
+  ('Grab Instant Car (Mandatory for whole cake delivery, confirm fee with admin)', 0),
+  ('Grab Instant Bike (Confirm fee with admin)', 0),
   ('Self Order Delivery Services', 0),
   ('Self Pick Up', 0)
 on conflict do nothing;

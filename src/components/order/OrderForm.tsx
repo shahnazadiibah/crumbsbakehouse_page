@@ -354,69 +354,11 @@ export default function OrderForm({
           onChange={(e) => setContact(e.target.value)}
           className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
-        <textarea
-          placeholder="Notes (optional)"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={2}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
-        />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
-          2. Delivery details
-        </h2>
-        <input
-          type="text"
-          placeholder="Recipient name"
-          value={deliveryName}
-          onChange={(e) => setDeliveryName(e.target.value)}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
-        />
-        <input
-          type="text"
-          placeholder="Recipient phone number"
-          value={deliveryPhone}
-          onChange={(e) => setDeliveryPhone(e.target.value)}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
-        />
-        <textarea
-          placeholder="Delivery address"
-          value={deliveryAddress}
-          onChange={(e) => setDeliveryAddress(e.target.value)}
-          rows={2}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
-        />
       </section>
 
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
-          3. Batch date
-        </h2>
-        {batchDates.length === 0 ? (
-          <p className="text-sm text-stone-500">
-            No upcoming batches are open for ordering right now. Please check
-            back later.
-          </p>
-        ) : (
-          <select
-            value={batchDate}
-            onChange={(e) => setBatchDate(e.target.value)}
-            className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
-          >
-            {batchDates.map((b) => (
-              <option key={b.date} value={b.date}>
-                {b.label}
-              </option>
-            ))}
-          </select>
-        )}
-      </section>
-
-      <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
-          4. Menu
+          2. Menu
         </h2>
         <div className="space-y-3">
           {menuItems.map((item) => {
@@ -469,9 +411,78 @@ export default function OrderForm({
         </div>
       </section>
 
+      <section className="space-y-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
+          3. Greeting card
+        </h2>
+        <textarea
+          placeholder="Write a short message for the greeting card (optional)"
+          value={greetingCard}
+          onChange={(e) => setGreetingCard(e.target.value)}
+          rows={2}
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
+        />
+      </section>
+
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
-          5. Delivery
+          4. Batch date
+        </h2>
+        {batchDates.length === 0 ? (
+          <p className="text-sm text-stone-500">
+            No upcoming batches are open for ordering right now. Please check
+            back later.
+          </p>
+        ) : (
+          <>
+            <select
+              value={batchDate}
+              onChange={(e) => setBatchDate(e.target.value)}
+              className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
+            >
+              {batchDates.map((b) => (
+                <option key={b.date} value={b.date}>
+                  {b.label}
+                </option>
+              ))}
+            </select>
+            <p className="mt-2 text-xs text-stone-500">
+              Orders are delivered on the batch date, between 8:00–9:00 AM.
+            </p>
+          </>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
+          5. Delivery details
+        </h2>
+        <input
+          type="text"
+          placeholder="Recipient name"
+          value={deliveryName}
+          onChange={(e) => setDeliveryName(e.target.value)}
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
+        />
+        <input
+          type="text"
+          placeholder="Recipient phone number"
+          value={deliveryPhone}
+          onChange={(e) => setDeliveryPhone(e.target.value)}
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
+        />
+        <textarea
+          placeholder="Delivery address"
+          value={deliveryAddress}
+          onChange={(e) => setDeliveryAddress(e.target.value)}
+          rows={2}
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
+        />
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
+          6. Delivery services
         </h2>
         {hasWholeCake && (
           <p className="mb-2 rounded-lg bg-brand-cream p-3 text-sm text-stone-700">
@@ -521,12 +532,12 @@ export default function OrderForm({
 
       <section className="space-y-2">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
-          6. Greeting card
+          7. Notes
         </h2>
         <textarea
-          placeholder="Write a short message for the greeting card (optional)"
-          value={greetingCard}
-          onChange={(e) => setGreetingCard(e.target.value)}
+          placeholder="Order notes (optional)"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
           rows={2}
           className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
