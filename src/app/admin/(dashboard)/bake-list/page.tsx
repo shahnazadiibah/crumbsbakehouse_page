@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import BatchDateFilter from "@/components/admin/BatchDateFilter";
+import { getProductFamily } from "@/lib/menuRules";
 
 export const dynamic = "force-dynamic";
 
@@ -61,29 +62,40 @@ export default async function BakeListPage({
     recipesByMenuItem.set(r.menu_item_id, list);
   }
 
-  const ingredientTotals = new Map<string, number>();
+  const totalsByFamily = new Map<string, Map<string, number>>();
   for (const order of orders ?? []) {
     for (const item of order.items) {
       const lines = recipesByMenuItem.get(item.menu_item_id) ?? [];
+      if (lines.length === 0) continue;
+
+      const family = getProductFamily(item.name);
+      const familyTotals = totalsByFamily.get(family) ?? new Map();
       for (const line of lines) {
-        ingredientTotals.set(
+        familyTotals.set(
           line.ingredient_id,
-          (ingredientTotals.get(line.ingredient_id) ?? 0) +
+          (familyTotals.get(line.ingredient_id) ?? 0) +
             line.qty_per_unit * item.qty
         );
       }
+      totalsByFamily.set(family, familyTotals);
     }
   }
-  const ingredientNeeds = Array.from(ingredientTotals.entries())
-    .map(([ingredientId, qty]) => {
-      const ing = ingredientById.get(ingredientId);
-      return {
-        name: ing?.name ?? "Unknown ingredient",
-        unit: ing?.unit ?? "",
-        qty,
-      };
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const ingredientNeedsByFamily = Array.from(totalsByFamily.entries())
+    .map(([family, ingredientTotals]) => ({
+      family,
+      ingredients: Array.from(ingredientTotals.entries())
+        .map(([ingredientId, qty]) => {
+          const ing = ingredientById.get(ingredientId);
+          return {
+            name: ing?.name ?? "Unknown ingredient",
+            unit: ing?.unit ?? "",
+            qty,
+          };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    }))
+    .sort((a, b) => a.family.localeCompare(b.family));
 
   return (
     <div className="space-y-4">
@@ -120,30 +132,37 @@ export default async function BakeListPage({
             ))}
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
               Ingredients needed
             </h2>
-            {ingredientNeeds.length === 0 ? (
+            {ingredientNeedsByFamily.length === 0 ? (
               <p className="rounded-xl border border-stone-200 bg-white p-6 text-sm text-stone-500">
                 No recipes are set up for the items in this batch, so
                 ingredient needs can&apos;t be calculated. Add recipes on the
                 Inventory page.
               </p>
             ) : (
-              <div className="divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
-                {ingredientNeeds.map((ing) => (
-                  <div
-                    key={ing.name}
-                    className="flex items-center justify-between px-4 py-3 text-sm"
-                  >
-                    <span className="text-stone-900">{ing.name}</span>
-                    <span className="font-semibold text-stone-900">
-                      {Number(ing.qty.toFixed(2))} {ing.unit}
-                    </span>
+              ingredientNeedsByFamily.map(({ family, ingredients }) => (
+                <div key={family} className="space-y-2">
+                  <h3 className="text-sm font-medium text-stone-700">
+                    {family}
+                  </h3>
+                  <div className="divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
+                    {ingredients.map((ing) => (
+                      <div
+                        key={ing.name}
+                        className="flex items-center justify-between px-4 py-3 text-sm"
+                      >
+                        <span className="text-stone-900">{ing.name}</span>
+                        <span className="font-semibold text-stone-900">
+                          {Number(ing.qty.toFixed(2))} {ing.unit}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))
             )}
           </div>
         </>

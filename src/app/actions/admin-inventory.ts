@@ -9,7 +9,6 @@ export interface IngredientInput {
   unit: string;
   costPerUnit: number;
   stock: number;
-  reorderThreshold: number;
 }
 
 export async function addIngredient(input: IngredientInput) {
@@ -24,7 +23,6 @@ export async function addIngredient(input: IngredientInput) {
     unit: input.unit.trim(),
     cost_per_unit: input.costPerUnit,
     stock: input.stock,
-    reorder_threshold: input.reorderThreshold,
   });
 
   if (error) return { ok: false, error: error.message };
@@ -43,7 +41,6 @@ export async function updateIngredient(id: string, input: IngredientInput) {
       unit: input.unit.trim(),
       cost_per_unit: input.costPerUnit,
       stock: input.stock,
-      reorder_threshold: input.reorderThreshold,
     })
     .eq("id", id);
 

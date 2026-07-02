@@ -14,7 +14,6 @@ interface Ingredient {
   unit: string;
   cost_per_unit: number;
   stock: number;
-  reorder_threshold: number;
 }
 
 const emptyForm: IngredientInput = {
@@ -22,8 +21,11 @@ const emptyForm: IngredientInput = {
   unit: "",
   costPerUnit: 0,
   stock: 0,
-  reorderThreshold: 0,
 };
+
+function formatQty(qty: number): number {
+  return Number(qty.toFixed(2));
+}
 
 function IngredientForm({
   initial,
@@ -37,7 +39,7 @@ function IngredientForm({
   const [form, setForm] = useState(initial);
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
       <input
         placeholder="Name"
         value={form.name}
@@ -59,20 +61,13 @@ function IngredientForm({
         }
         className="rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
       />
-      <input
-        type="number"
-        placeholder="Stock"
-        value={form.stock}
-        onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })}
-        className="rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
-      />
       <div className="flex gap-1">
         <input
           type="number"
-          placeholder="Reorder at"
-          value={form.reorderThreshold}
+          placeholder="Stock"
+          value={form.stock}
           onChange={(e) =>
-            setForm({ ...form, reorderThreshold: Number(e.target.value) })
+            setForm({ ...form, stock: Number(e.target.value) })
           }
           className="w-full rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
         />
@@ -90,8 +85,10 @@ function IngredientForm({
 
 export default function IngredientsManager({
   ingredients,
+  neededByIngredient,
 }: {
   ingredients: Ingredient[];
+  neededByIngredient: Record<string, number>;
 }) {
   const [isPending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -106,22 +103,25 @@ export default function IngredientsManager({
               <th className="px-4 py-3">Unit</th>
               <th className="px-4 py-3">Cost/unit</th>
               <th className="px-4 py-3">Stock</th>
-              <th className="px-4 py-3">Reorder at</th>
+              <th className="px-4 py-3">Needed for batch</th>
+              <th className="px-4 py-3">To buy</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
-            {ingredients.map((ing) =>
-              editingId === ing.id ? (
+            {ingredients.map((ing) => {
+              const needed = neededByIngredient[ing.id] ?? 0;
+              const toBuy = Math.max(0, needed - ing.stock);
+
+              return editingId === ing.id ? (
                 <tr key={ing.id}>
-                  <td colSpan={6} className="px-4 py-3">
+                  <td colSpan={7} className="px-4 py-3">
                     <IngredientForm
                       initial={{
                         name: ing.name,
                         unit: ing.unit,
                         costPerUnit: ing.cost_per_unit,
                         stock: ing.stock,
-                        reorderThreshold: ing.reorder_threshold,
                       }}
                       submitLabel="Save"
                       onSubmit={(input) =>
@@ -134,12 +134,7 @@ export default function IngredientsManager({
                   </td>
                 </tr>
               ) : (
-                <tr
-                  key={ing.id}
-                  className={
-                    ing.stock <= ing.reorder_threshold ? "bg-red-50" : ""
-                  }
-                >
+                <tr key={ing.id} className={toBuy > 0 ? "bg-red-50" : ""}>
                   <td className="px-4 py-3 font-medium text-stone-900">
                     {ing.name}
                   </td>
@@ -147,16 +142,18 @@ export default function IngredientsManager({
                   <td className="px-4 py-3 text-stone-600">
                     {ing.cost_per_unit}
                   </td>
+                  <td className="px-4 py-3 text-stone-600">{ing.stock}</td>
                   <td className="px-4 py-3 text-stone-600">
-                    {ing.stock}
-                    {ing.stock <= ing.reorder_threshold && (
-                      <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
-                        Reorder
-                      </span>
-                    )}
+                    {formatQty(needed)}
                   </td>
                   <td className="px-4 py-3 text-stone-600">
-                    {ing.reorder_threshold}
+                    {toBuy > 0 ? (
+                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                        Buy {formatQty(toBuy)} {ing.unit}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
@@ -178,8 +175,8 @@ export default function IngredientsManager({
                     </button>
                   </td>
                 </tr>
-              )
-            )}
+              );
+            })}
           </tbody>
         </table>
       </div>
