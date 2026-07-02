@@ -4,11 +4,19 @@ import { useState, useTransition } from "react";
 import { closeBatch } from "@/app/actions/admin-batches";
 import { formatIDR } from "@/lib/format";
 
+interface MenuBreakdownLine {
+  name: string;
+  qty: number;
+  revenue: number;
+}
+
 interface CloseBatchCardProps {
   batchDate: string;
   label: string;
   revenuePreview: number;
   ingredientCostPreview: number;
+  menuBreakdown: MenuBreakdownLine[];
+  totalQty: number;
 }
 
 export default function CloseBatchCard({
@@ -16,6 +24,8 @@ export default function CloseBatchCard({
   label,
   revenuePreview,
   ingredientCostPreview,
+  menuBreakdown,
+  totalQty,
 }: CloseBatchCardProps) {
   const [otherCosts, setOtherCosts] = useState(0);
   const [note, setNote] = useState("");
@@ -67,6 +77,32 @@ export default function CloseBatchCard({
           </p>
         </div>
       </div>
+
+      {menuBreakdown.length > 0 && (
+        <div className="rounded-lg border border-stone-200">
+          <div className="divide-y divide-stone-100">
+            {menuBreakdown.map((line) => (
+              <div
+                key={line.name}
+                className="flex items-center justify-between px-3 py-2 text-sm"
+              >
+                <span className="text-stone-700">
+                  {line.qty}x {line.name}
+                </span>
+                <span className="font-medium text-stone-900">
+                  {formatIDR(line.revenue)}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center justify-between border-t border-stone-200 px-3 py-2 text-sm">
+            <span className="font-medium text-stone-700">
+              Total quantity ordered
+            </span>
+            <span className="font-semibold text-stone-900">{totalQty}</span>
+          </div>
+        </div>
+      )}
 
       <input
         placeholder="Other costs note (optional)"

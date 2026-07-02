@@ -58,9 +58,8 @@ export default async function BatchesPage() {
     const batchOrders = (orders ?? []).filter(
       (o) => o.batch_date === batchDate
     );
-    const revenue = batchOrders
-      .filter((o) => o.paid)
-      .reduce((sum, o) => sum + o.grand_total, 0);
+    const paidOrders = batchOrders.filter((o) => o.paid);
+    const revenue = paidOrders.reduce((sum, o) => sum + o.grand_total, 0);
 
     let ingredientCost = 0;
     for (const order of batchOrders) {
@@ -72,7 +71,22 @@ export default async function BatchesPage() {
         }
       }
     }
-    return { revenue, ingredientCost };
+
+    const menuTotals = new Map<string, { qty: number; revenue: number }>();
+    for (const order of paidOrders) {
+      for (const item of order.items) {
+        const entry = menuTotals.get(item.name) ?? { qty: 0, revenue: 0 };
+        entry.qty += item.qty;
+        entry.revenue += item.qty * item.price;
+        menuTotals.set(item.name, entry);
+      }
+    }
+    const menuBreakdown = Array.from(menuTotals.entries())
+      .map(([name, { qty, revenue }]) => ({ name, qty, revenue }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    const totalQty = menuBreakdown.reduce((sum, m) => sum + m.qty, 0);
+
+    return { revenue, ingredientCost, menuBreakdown, totalQty };
   }
 
   return (
@@ -86,7 +100,8 @@ export default async function BatchesPage() {
         ) : (
           <div className="space-y-4">
             {openDates.map((date) => {
-              const { revenue, ingredientCost } = previewFor(date);
+              const { revenue, ingredientCost, menuBreakdown, totalQty } =
+                previewFor(date);
               return (
                 <CloseBatchCard
                   key={date}
@@ -94,6 +109,8 @@ export default async function BatchesPage() {
                   label={formatBatchLabel(date)}
                   revenuePreview={revenue}
                   ingredientCostPreview={ingredientCost}
+                  menuBreakdown={menuBreakdown}
+                  totalQty={totalQty}
                 />
               );
             })}

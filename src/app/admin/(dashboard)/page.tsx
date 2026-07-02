@@ -53,7 +53,7 @@ export default async function AdminOrdersPage({
           No orders have been placed yet.
         </p>
       ) : (
-        <OrdersTable orders={orders ?? []} />
+        <OrdersTable orders={orders ?? []} batchDate={selected} />
       )}
     </div>
   );

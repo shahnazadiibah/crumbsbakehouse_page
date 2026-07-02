@@ -38,3 +38,17 @@ export async function setOrderStatus(orderId: string, status: OrderStatus) {
   revalidatePath("/admin");
   return { ok: true };
 }
+
+export async function deleteOrder(orderId: string) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("orders").delete().eq("id", orderId);
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
