@@ -3,7 +3,12 @@
 import { useMemo, useState, useTransition } from "react";
 import { submitOrder } from "@/app/actions/orders";
 import { formatIDR } from "@/lib/format";
-import { isMandatoryWholeCakeZone, isWholeCakeItem } from "@/lib/menuRules";
+import {
+  isMandatoryWholeCakeZone,
+  isSameDayBikeZone,
+  isWholeCakeItem,
+  requiresPickupTime,
+} from "@/lib/menuRules";
 import type { OrderItem } from "@/lib/supabase/types";
 
 interface MenuItem {
@@ -46,6 +51,7 @@ interface ConfirmedOrder {
   deliveryName: string;
   deliveryPhone: string;
   deliveryAddress: string;
+  pickupTime: string;
 }
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
@@ -85,6 +91,10 @@ function buildWhatsAppMessage(order: ConfirmedOrder): string {
     `Alamat: ${order.deliveryAddress}`
   );
 
+  if (order.pickupTime) {
+    lines.push(`Estimasi waktu pick-up: ${order.pickupTime}`);
+  }
+
   if (order.greetingCard) {
     lines.push("", `Kartu ucapan: "${order.greetingCard}"`);
   }
@@ -115,6 +125,7 @@ export default function OrderForm({
   const [deliveryName, setDeliveryName] = useState("");
   const [deliveryPhone, setDeliveryPhone] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [pickupTime, setPickupTime] = useState("");
   const [batchDate, setBatchDate] = useState(batchDates[0]?.date ?? "");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [cakeTopper, setCakeTopper] = useState("");
@@ -149,6 +160,12 @@ export default function OrderForm({
   const hasItems = Object.values(quantities).some((qty) => qty > 0);
   const deliveryNeedsConfirmation =
     selectedZone?.name.toLowerCase().includes("confirm") ?? false;
+  const showSameDayBikeNote = selectedZone
+    ? isSameDayBikeZone(selectedZone.name)
+    : false;
+  const needsPickupTime = selectedZone
+    ? requiresPickupTime(selectedZone.name)
+    : false;
 
   function adjustQty(itemId: string, delta: number) {
     setQuantities((prev) => ({
@@ -181,6 +198,10 @@ export default function OrderForm({
       setError("Please select at least one item.");
       return;
     }
+    if (needsPickupTime && !pickupTime.trim()) {
+      setError("Please provide a pick-up time estimation.");
+      return;
+    }
 
     const items = Object.entries(quantities)
       .filter(([, qty]) => qty > 0)
@@ -204,6 +225,7 @@ export default function OrderForm({
         deliveryName,
         deliveryPhone,
         deliveryAddress,
+        pickupTime: needsPickupTime ? pickupTime : "",
         items,
       });
 
@@ -229,6 +251,7 @@ export default function OrderForm({
         deliveryName,
         deliveryPhone,
         deliveryAddress,
+        pickupTime: needsPickupTime ? pickupTime : "",
       });
     });
   }
@@ -322,6 +345,7 @@ export default function OrderForm({
             setDeliveryName("");
             setDeliveryPhone("");
             setDeliveryAddress("");
+            setPickupTime("");
           }}
           className="w-full text-center text-sm text-stone-500 underline"
         >
@@ -426,7 +450,7 @@ export default function OrderForm({
 
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
-          4. Batch date
+          4. Delivery date (Batch)
         </h2>
         {batchDates.length === 0 ? (
           <p className="text-sm text-stone-500">
@@ -447,7 +471,7 @@ export default function OrderForm({
               ))}
             </select>
             <p className="mt-2 text-xs text-stone-500">
-              Orders are delivered on the batch date, between 8:00–9:00 AM.
+              Orders will be delivered between 8:00 - 9:00 AM
             </p>
           </>
         )}
@@ -527,6 +551,20 @@ export default function OrderForm({
             confirm the exact price with you on WhatsApp. It isn&apos;t
             included in the QRIS amount below.
           </p>
+        )}
+        {showSameDayBikeNote && (
+          <p className="mt-2 rounded-lg bg-brand-cream p-3 text-sm text-stone-700">
+            Delivery time 6-8 hrs from pick up.
+          </p>
+        )}
+        {needsPickupTime && (
+          <input
+            type="text"
+            placeholder="Pick up time estimation"
+            value={pickupTime}
+            onChange={(e) => setPickupTime(e.target.value)}
+            className="mt-2 w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
+          />
         )}
       </section>
 

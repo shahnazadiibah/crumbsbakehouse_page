@@ -2,7 +2,11 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUpcomingBatchDates } from "@/lib/batchDates";
-import { isMandatoryWholeCakeZone, isWholeCakeItem } from "@/lib/menuRules";
+import {
+  isMandatoryWholeCakeZone,
+  isWholeCakeItem,
+  requiresPickupTime,
+} from "@/lib/menuRules";
 import type { OrderItem } from "@/lib/supabase/types";
 
 export interface SubmitOrderInput {
@@ -15,6 +19,7 @@ export interface SubmitOrderInput {
   deliveryName: string;
   deliveryPhone: string;
   deliveryAddress: string;
+  pickupTime: string;
   items: { menuItemId: string; qty: number; topper?: string }[];
 }
 
@@ -108,9 +113,10 @@ export async function submitOrder(
     return { ok: false, error: "Could not load delivery options. Please try again." };
   }
 
+  const selectedZone = allZones.find((z) => z.id === input.zoneId);
+
   const hasWholeCake = items.some((i) => isWholeCakeItem(i.name));
   if (hasWholeCake) {
-    const selectedZone = allZones.find((z) => z.id === input.zoneId);
     if (!selectedZone || !isMandatoryWholeCakeZone(selectedZone.name)) {
       return {
         ok: false,
@@ -120,13 +126,20 @@ export async function submitOrder(
     }
   }
 
+  const pickupTime = input.pickupTime.trim();
+  if (selectedZone && requiresPickupTime(selectedZone.name) && !pickupTime) {
+    return {
+      ok: false,
+      error: "Please provide a pick-up time estimation.",
+    };
+  }
+
   let deliveryFee = 0;
   if (input.zoneId) {
-    const zone = allZones.find((z) => z.id === input.zoneId);
-    if (!zone) {
+    if (!selectedZone) {
       return { ok: false, error: "Invalid delivery option selected." };
     }
-    deliveryFee = zone.fee;
+    deliveryFee = selectedZone.fee;
   }
 
   const itemsTotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
@@ -148,6 +161,7 @@ export async function submitOrder(
       delivery_name: deliveryName,
       delivery_phone: deliveryPhone,
       delivery_address: deliveryAddress,
+      pickup_time: pickupTime || null,
     })
     .select("id")
     .single();

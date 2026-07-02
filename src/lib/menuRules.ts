@@ -12,6 +12,20 @@ export function isMandatoryWholeCakeZone(zoneName: string): boolean {
   return zoneName.toLowerCase().includes("whole cake");
 }
 
+// Same-day Grab Bike has a wider delivery window than the other options,
+// so the order page shows a heads-up note when it's selected. Matched by
+// substring so it still works if the zone gets re-seeded.
+export function isSameDayBikeZone(zoneName: string): boolean {
+  return zoneName.toLowerCase().includes("sameday");
+}
+
+// Self-arranged delivery options don't have a fixed pickup/handoff time, so
+// the customer provides their own estimate.
+export function requiresPickupTime(zoneName: string): boolean {
+  const name = zoneName.toLowerCase();
+  return name.includes("self pick up") || name.includes("self order");
+}
+
 // Groups menu items into product families for the bake list's ingredient
 // breakdown. Falls back to the item's own name so a future product that
 // doesn't match either family still gets its own section instead of being

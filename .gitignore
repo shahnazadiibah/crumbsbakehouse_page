@@ -40,6 +40,9 @@ yarn-error.log*
 QRIS.jpeg
 QRIS.png
 
+# source copy of static assets (the real copy lives in /public)
+/page_header.png
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

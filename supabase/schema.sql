@@ -42,6 +42,7 @@ create table if not exists orders (
   delivery_name text,
   delivery_phone text,
   delivery_address text,
+  pickup_time text,
   created_at timestamptz not null default now()
 );
 
@@ -181,7 +182,7 @@ on conflict do nothing;
 -- cake") to auto-enforce it for whole-cake orders — keep that phrase if you
 -- rename it. See isWholeCakeItem/isMandatoryWholeCakeZone in src/lib/menuRules.ts.
 insert into delivery_zones (name, fee) values
-  ('Grab Bike Sameday (Preferred)', 32000),
+  ('Grab Sameday Bike (Preferred)', 32000),
   ('Grab Instant Car (Mandatory for whole cake delivery, confirm fee with admin)', 0),
   ('Grab Instant Bike (Confirm fee with admin)', 0),
   ('Self Order Delivery Services', 0),

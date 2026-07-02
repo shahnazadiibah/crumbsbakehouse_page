@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { getUpcomingBatchDates } from "@/lib/batchDates";
 import OrderForm from "@/components/order/OrderForm";
@@ -29,10 +30,16 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-stone-100 px-4 py-10">
       <header className="mx-auto mb-8 max-w-lg text-center">
-        <h1 className="text-2xl font-bold text-stone-900">
-          Crumbs Bakehouse
-        </h1>
-        <p className="mt-1 text-sm text-stone-600">
+        <h1 className="sr-only">Crumbs Bakehouse</h1>
+        <Image
+          src="/page_header.png"
+          alt="Crumbs Bakehouse"
+          width={600}
+          height={200}
+          className="h-auto w-full rounded-2xl"
+          priority
+        />
+        <p className="mt-3 text-sm text-stone-600">
           Weekly Saturday pre-order — pick your batch, place your order, pay
           via QRIS.
         </p>

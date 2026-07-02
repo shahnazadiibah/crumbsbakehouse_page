@@ -25,6 +25,7 @@ interface OrderRow {
   delivery_name: string | null;
   delivery_phone: string | null;
   delivery_address: string | null;
+  pickup_time: string | null;
 }
 
 const STATUSES: OrderStatus[] = ["Pending", "Ready", "Done"];
@@ -36,6 +37,7 @@ function exportOrders(orders: OrderRow[], batchDate: string) {
     "Delivery name",
     "Delivery phone",
     "Delivery address",
+    "Pick up time estimation",
     "Items",
     "Items total",
     "Delivery fee",
@@ -52,6 +54,7 @@ function exportOrders(orders: OrderRow[], batchDate: string) {
     order.delivery_name ?? "",
     order.delivery_phone ?? "",
     order.delivery_address ?? "",
+    order.pickup_time ?? "",
     order.items
       .map((i) => `${i.qty}x ${i.name}${i.topper ? ` (${i.topper})` : ""}`)
       .join("; "),
@@ -124,6 +127,11 @@ export default function OrdersTable({
                   </p>
                   <p className="text-stone-500">{order.delivery_phone}</p>
                   <p className="text-stone-500">{order.delivery_address}</p>
+                  {order.pickup_time && (
+                    <p className="text-stone-500">
+                      Pick-up: {order.pickup_time}
+                    </p>
+                  )}
                 </td>
                 <td className="px-4 py-3 align-top">
                   {order.items.map((item, i) => (

@@ -29,7 +29,7 @@ export default async function AdminOrdersPage({
     ? await supabase
         .from("orders")
         .select(
-          "id, customer_name, contact, items, delivery_fee, items_total, grand_total, paid, status, notes, greeting_card, delivery_name, delivery_phone, delivery_address"
+          "id, customer_name, contact, items, delivery_fee, items_total, grand_total, paid, status, notes, greeting_card, delivery_name, delivery_phone, delivery_address, pickup_time"
         )
         .eq("batch_date", selected)
         .order("created_at")

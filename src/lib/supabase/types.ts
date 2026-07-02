@@ -69,6 +69,7 @@ export interface Database {
           delivery_name: string | null;
           delivery_phone: string | null;
           delivery_address: string | null;
+          pickup_time: string | null;
           created_at: string;
         };
         Insert: {
@@ -88,6 +89,7 @@ export interface Database {
           delivery_name?: string | null;
           delivery_phone?: string | null;
           delivery_address?: string | null;
+          pickup_time?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["orders"]["Insert"]>;
