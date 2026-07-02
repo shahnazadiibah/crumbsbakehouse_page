@@ -1,0 +1,204 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import {
+  addIngredient,
+  deleteIngredient,
+  updateIngredient,
+  type IngredientInput,
+} from "@/app/actions/admin-inventory";
+
+interface Ingredient {
+  id: string;
+  name: string;
+  unit: string;
+  cost_per_unit: number;
+  stock: number;
+  reorder_threshold: number;
+}
+
+const emptyForm: IngredientInput = {
+  name: "",
+  unit: "",
+  costPerUnit: 0,
+  stock: 0,
+  reorderThreshold: 0,
+};
+
+function IngredientForm({
+  initial,
+  onSubmit,
+  submitLabel,
+}: {
+  initial: IngredientInput;
+  onSubmit: (input: IngredientInput) => void;
+  submitLabel: string;
+}) {
+  const [form, setForm] = useState(initial);
+
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
+      <input
+        placeholder="Name"
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        className="col-span-2 rounded-lg border border-stone-300 p-2 text-sm sm:col-span-2"
+      />
+      <input
+        placeholder="Unit (g, pcs, ml…)"
+        value={form.unit}
+        onChange={(e) => setForm({ ...form, unit: e.target.value })}
+        className="rounded-lg border border-stone-300 p-2 text-sm"
+      />
+      <input
+        type="number"
+        placeholder="Cost/unit"
+        value={form.costPerUnit}
+        onChange={(e) =>
+          setForm({ ...form, costPerUnit: Number(e.target.value) })
+        }
+        className="rounded-lg border border-stone-300 p-2 text-sm"
+      />
+      <input
+        type="number"
+        placeholder="Stock"
+        value={form.stock}
+        onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })}
+        className="rounded-lg border border-stone-300 p-2 text-sm"
+      />
+      <div className="flex gap-1">
+        <input
+          type="number"
+          placeholder="Reorder at"
+          value={form.reorderThreshold}
+          onChange={(e) =>
+            setForm({ ...form, reorderThreshold: Number(e.target.value) })
+          }
+          className="w-full rounded-lg border border-stone-300 p-2 text-sm"
+        />
+        <button
+          type="button"
+          onClick={() => onSubmit(form)}
+          className="shrink-0 rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700"
+        >
+          {submitLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function IngredientsManager({
+  ingredients,
+}: {
+  ingredients: Ingredient[];
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  return (
+    <div className="space-y-3">
+      <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white">
+        <table className="w-full text-sm">
+          <thead className="border-b border-stone-200 bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-500">
+            <tr>
+              <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Unit</th>
+              <th className="px-4 py-3">Cost/unit</th>
+              <th className="px-4 py-3">Stock</th>
+              <th className="px-4 py-3">Reorder at</th>
+              <th className="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stone-100">
+            {ingredients.map((ing) =>
+              editingId === ing.id ? (
+                <tr key={ing.id}>
+                  <td colSpan={6} className="px-4 py-3">
+                    <IngredientForm
+                      initial={{
+                        name: ing.name,
+                        unit: ing.unit,
+                        costPerUnit: ing.cost_per_unit,
+                        stock: ing.stock,
+                        reorderThreshold: ing.reorder_threshold,
+                      }}
+                      submitLabel="Save"
+                      onSubmit={(input) =>
+                        startTransition(async () => {
+                          await updateIngredient(ing.id, input);
+                          setEditingId(null);
+                        })
+                      }
+                    />
+                  </td>
+                </tr>
+              ) : (
+                <tr
+                  key={ing.id}
+                  className={
+                    ing.stock <= ing.reorder_threshold ? "bg-red-50" : ""
+                  }
+                >
+                  <td className="px-4 py-3 font-medium text-stone-900">
+                    {ing.name}
+                  </td>
+                  <td className="px-4 py-3 text-stone-600">{ing.unit}</td>
+                  <td className="px-4 py-3 text-stone-600">
+                    {ing.cost_per_unit}
+                  </td>
+                  <td className="px-4 py-3 text-stone-600">
+                    {ing.stock}
+                    {ing.stock <= ing.reorder_threshold && (
+                      <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                        Reorder
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-stone-600">
+                    {ing.reorder_threshold}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => setEditingId(ing.id)}
+                      className="mr-3 text-amber-700 hover:underline"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      disabled={isPending}
+                      onClick={() =>
+                        startTransition(() => {
+                          deleteIngredient(ing.id);
+                        })
+                      }
+                      className="text-red-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              )
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="rounded-xl border border-dashed border-stone-300 bg-white p-4">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">
+          Add ingredient
+        </p>
+        <IngredientForm
+          key={ingredients.length}
+          initial={emptyForm}
+          submitLabel="Add"
+          onSubmit={(input) =>
+            startTransition(() => {
+              addIngredient(input);
+            })
+          }
+        />
+      </div>
+    </div>
+  );
+}

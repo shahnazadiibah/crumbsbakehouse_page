@@ -36,6 +36,13 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local payment/QR assets (uploaded to Supabase Storage instead)
+QRIS.jpeg
+QRIS.png
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local Claude Code settings (session-specific permissions)
+.claude/settings.local.json
