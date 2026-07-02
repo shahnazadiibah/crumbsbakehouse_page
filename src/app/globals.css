@@ -5,6 +5,12 @@
   --foreground: #171717;
 }
 
+@theme {
+  --color-brand-cream: #fffdc4;
+  --color-brand-olive: #7c8447;
+  --color-brand-olive-dark: #656c3a;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

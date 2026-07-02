@@ -240,7 +240,7 @@ export default function OrderForm({
     )}`;
 
     return (
-      <div className="mx-auto max-w-lg space-y-6 rounded-2xl border border-amber-200 bg-white p-6 shadow-sm">
+      <div className="mx-auto max-w-lg space-y-6 rounded-2xl border border-brand-olive/30 bg-white p-6 shadow-sm">
         <div>
           <h2 className="text-xl font-semibold text-stone-900">
             Order received! 🎉
@@ -252,7 +252,7 @@ export default function OrderForm({
           </p>
         </div>
 
-        <div className="rounded-xl bg-amber-50 p-4 text-center">
+        <div className="rounded-xl bg-brand-cream p-4 text-center">
           <p className="text-sm text-stone-600">
             {confirmedOrder.deliveryNeedsConfirmation
               ? "Amount to pay (items only)"
@@ -262,7 +262,7 @@ export default function OrderForm({
             {formatIDR(confirmedOrder.grandTotal)}
           </p>
           {confirmedOrder.deliveryNeedsConfirmation && (
-            <p className="mt-1 text-xs text-amber-800">
+            <p className="mt-1 text-xs text-stone-700">
               Delivery fee not yet included — we&apos;ll confirm it with you
               on WhatsApp.
             </p>
@@ -334,7 +334,7 @@ export default function OrderForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="mx-auto max-w-lg space-y-8 rounded-2xl border border-amber-200 bg-white p-6 shadow-sm"
+      className="mx-auto max-w-lg space-y-8 rounded-2xl border border-brand-olive/30 bg-white p-6 shadow-sm"
     >
       <section className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
@@ -345,21 +345,21 @@ export default function OrderForm({
           placeholder="Full name"
           value={customerName}
           onChange={(e) => setCustomerName(e.target.value)}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm"
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
         <input
           type="text"
           placeholder="WhatsApp number"
           value={contact}
           onChange={(e) => setContact(e.target.value)}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm"
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
         <textarea
           placeholder="Notes (optional)"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm"
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
       </section>
 
@@ -372,21 +372,21 @@ export default function OrderForm({
           placeholder="Recipient name"
           value={deliveryName}
           onChange={(e) => setDeliveryName(e.target.value)}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm"
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
         <input
           type="text"
           placeholder="Recipient phone number"
           value={deliveryPhone}
           onChange={(e) => setDeliveryPhone(e.target.value)}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm"
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
         <textarea
           placeholder="Delivery address"
           value={deliveryAddress}
           onChange={(e) => setDeliveryAddress(e.target.value)}
           rows={2}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm"
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
       </section>
 
@@ -403,7 +403,7 @@ export default function OrderForm({
           <select
             value={batchDate}
             onChange={(e) => setBatchDate(e.target.value)}
-            className="w-full rounded-lg border border-stone-300 p-3 text-sm"
+            className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
           >
             {batchDates.map((b) => (
               <option key={b.date} value={b.date}>
@@ -460,7 +460,7 @@ export default function OrderForm({
                     placeholder="Cake topper text (optional)"
                     value={cakeTopper}
                     onChange={(e) => setCakeTopper(e.target.value)}
-                    className="mt-3 w-full rounded-lg border border-stone-300 p-2 text-sm"
+                    className="mt-3 w-full rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
                   />
                 )}
               </div>
@@ -474,7 +474,7 @@ export default function OrderForm({
           5. Delivery
         </h2>
         {hasWholeCake && (
-          <p className="mb-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+          <p className="mb-2 rounded-lg bg-brand-cream p-3 text-sm text-stone-700">
             Whole cake orders require Grab Instant Car delivery to arrive
             undamaged, so it&apos;s selected automatically below.
           </p>
@@ -489,7 +489,7 @@ export default function OrderForm({
                   disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                 } ${
                   effectiveZoneId === zone.id
-                    ? "border-amber-500 bg-amber-50"
+                    ? "border-brand-olive bg-brand-cream"
                     : "border-stone-200"
                 }`}
               >
@@ -501,6 +501,7 @@ export default function OrderForm({
                     checked={effectiveZoneId === zone.id}
                     disabled={disabled}
                     onChange={() => setZoneId(zone.id)}
+                    className="accent-brand-olive"
                   />
                   {zone.name}
                 </span>
@@ -510,7 +511,7 @@ export default function OrderForm({
           })}
         </div>
         {deliveryNeedsConfirmation && (
-          <p className="mt-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+          <p className="mt-2 rounded-lg bg-brand-cream p-3 text-sm text-stone-700">
             The delivery fee for this option isn&apos;t fixed — we&apos;ll
             confirm the exact price with you on WhatsApp. It isn&apos;t
             included in the QRIS amount below.
@@ -527,7 +528,7 @@ export default function OrderForm({
           value={greetingCard}
           onChange={(e) => setGreetingCard(e.target.value)}
           rows={2}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm"
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
       </section>
 
@@ -563,7 +564,7 @@ export default function OrderForm({
       <button
         type="submit"
         disabled={isPending || batchDates.length === 0}
-        className="w-full rounded-lg bg-amber-600 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
+        className="w-full rounded-lg bg-brand-olive px-4 py-3 text-sm font-semibold text-white hover:bg-brand-olive-dark disabled:opacity-50"
       >
         {isPending ? "Submitting…" : "Place order"}
       </button>

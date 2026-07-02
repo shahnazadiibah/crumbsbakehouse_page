@@ -113,7 +113,7 @@ export default function RecipeEditor({
             setSaved(true);
           })
         }
-        className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
+        className="rounded-lg bg-brand-olive px-4 py-2 text-sm font-semibold text-white hover:bg-brand-olive-dark disabled:opacity-50"
       >
         {isPending ? "Saving…" : "Save recipe"}
       </button>

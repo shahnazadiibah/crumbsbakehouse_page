@@ -37,7 +37,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-stone-100 px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-4 rounded-2xl border border-amber-200 bg-white p-6 shadow-sm"
+        className="w-full max-w-sm space-y-4 rounded-2xl border border-brand-olive/30 bg-white p-6 shadow-sm"
       >
         <div>
           <h1 className="text-xl font-semibold text-stone-900">
@@ -52,7 +52,7 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm"
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
         <input
           type="password"
@@ -60,7 +60,7 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm"
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
 
         {error && (
@@ -72,7 +72,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-amber-600 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
+          className="w-full rounded-lg bg-brand-olive px-4 py-3 text-sm font-semibold text-white hover:bg-brand-olive-dark disabled:opacity-50"
         >
           {loading ? "Signing in…" : "Sign in"}
         </button>

@@ -70,7 +70,7 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                   <div key={i}>
                     {item.qty}x {item.name}
                     {item.topper && (
-                      <span className="text-amber-700">
+                      <span className="font-medium text-stone-700">
                         {" "}
                         — Topper: &quot;{item.topper}&quot;
                       </span>
@@ -96,7 +96,7 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                       setOrderPaid(order.id, e.target.checked);
                     })
                   }
-                  className="h-4 w-4"
+                  className="h-4 w-4 accent-brand-olive"
                 />
               </td>
               <td className="px-4 py-3 align-top">

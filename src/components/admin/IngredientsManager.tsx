@@ -42,13 +42,13 @@ function IngredientForm({
         placeholder="Name"
         value={form.name}
         onChange={(e) => setForm({ ...form, name: e.target.value })}
-        className="col-span-2 rounded-lg border border-stone-300 p-2 text-sm sm:col-span-2"
+        className="col-span-2 rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500 sm:col-span-2"
       />
       <input
         placeholder="Unit (g, pcs, ml…)"
         value={form.unit}
         onChange={(e) => setForm({ ...form, unit: e.target.value })}
-        className="rounded-lg border border-stone-300 p-2 text-sm"
+        className="rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
       />
       <input
         type="number"
@@ -57,14 +57,14 @@ function IngredientForm({
         onChange={(e) =>
           setForm({ ...form, costPerUnit: Number(e.target.value) })
         }
-        className="rounded-lg border border-stone-300 p-2 text-sm"
+        className="rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
       />
       <input
         type="number"
         placeholder="Stock"
         value={form.stock}
         onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })}
-        className="rounded-lg border border-stone-300 p-2 text-sm"
+        className="rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
       />
       <div className="flex gap-1">
         <input
@@ -74,12 +74,12 @@ function IngredientForm({
           onChange={(e) =>
             setForm({ ...form, reorderThreshold: Number(e.target.value) })
           }
-          className="w-full rounded-lg border border-stone-300 p-2 text-sm"
+          className="w-full rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
         />
         <button
           type="button"
           onClick={() => onSubmit(form)}
-          className="shrink-0 rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700"
+          className="shrink-0 rounded-lg bg-brand-olive px-3 py-2 text-xs font-semibold text-white hover:bg-brand-olive-dark"
         >
           {submitLabel}
         </button>
@@ -161,7 +161,7 @@ export default function IngredientsManager({
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => setEditingId(ing.id)}
-                      className="mr-3 text-amber-700 hover:underline"
+                      className="mr-3 font-medium text-stone-700 hover:underline"
                     >
                       Edit
                     </button>

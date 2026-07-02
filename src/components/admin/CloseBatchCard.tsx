@@ -72,7 +72,7 @@ export default function CloseBatchCard({
         placeholder="Other costs note (optional)"
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        className="w-full rounded-lg border border-stone-300 p-2 text-sm"
+        className="w-full rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
       />
 
       {error && (
@@ -84,7 +84,7 @@ export default function CloseBatchCard({
       <button
         disabled={isPending}
         onClick={handleClose}
-        className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
+        className="rounded-lg bg-brand-olive px-4 py-2 text-sm font-semibold text-white hover:bg-brand-olive-dark disabled:opacity-50"
       >
         {isPending ? "Closing…" : "Close batch"}
       </button>
