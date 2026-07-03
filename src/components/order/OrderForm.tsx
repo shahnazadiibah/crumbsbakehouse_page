@@ -32,8 +32,13 @@ interface OrderFormProps {
   menuItems: MenuItem[];
   deliveryZones: DeliveryZone[];
   batchDates: BatchDateOption[];
-  qrisImageUrl: string;
 }
+
+const BANK_DETAILS = {
+  bankName: "Bank Mandiri",
+  accountNumber: "1300024065115",
+  accountHolder: "Shahnaz Adiibah",
+};
 
 interface ConfirmedOrder {
   id: string;
@@ -107,7 +112,9 @@ function buildWhatsAppMessage(order: ConfirmedOrder): string {
     "",
     `Order ID: ${order.id.slice(0, 8).toUpperCase()}`,
     "",
-    "Saya sudah transfer via QRIS sesuai jumlah di atas. Mohon dikonfirmasi ya. Terima kasih! \u{1F64F}"
+    order.deliveryNeedsConfirmation
+      ? "Mohon dikonfirmasi ongkir dan total akhir pesanan saya. Terima kasih! \u{1F64F}"
+      : "Saya sudah transfer sesuai jumlah di atas, bukti pembayaran terlampir. Mohon dikonfirmasi ya. Terima kasih! \u{1F64F}"
   );
 
   return lines.join("\n");
@@ -117,7 +124,6 @@ export default function OrderForm({
   menuItems,
   deliveryZones,
   batchDates,
-  qrisImageUrl,
 }: OrderFormProps) {
   const [customerName, setCustomerName] = useState("");
   const [contact, setContact] = useState("");
@@ -135,8 +141,16 @@ export default function OrderForm({
   const [confirmedOrder, setConfirmedOrder] = useState<ConfirmedOrder | null>(
     null
   );
-  const [copied, setCopied] = useState(false);
+  const [copiedMessage, setCopiedMessage] = useState(false);
+  const [copiedAmount, setCopiedAmount] = useState(false);
+  const [copiedAccount, setCopiedAccount] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  function copyToClipboard(text: string, setCopied: (v: boolean) => void) {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   const itemsTotal = useMemo(() => {
     return menuItems.reduce(
@@ -266,38 +280,71 @@ export default function OrderForm({
       <div className="mx-auto max-w-lg space-y-6 rounded-2xl border border-brand-olive/30 bg-white p-6 shadow-sm">
         <div>
           <h2 className="text-xl font-semibold text-stone-900">
-            Order received! 🎉
+            We&apos;ve received your order! 🤍
           </h2>
-          <p className="mt-1 text-sm text-stone-600">
+          <p className="mt-1 whitespace-pre-line text-sm text-stone-600">
             {confirmedOrder.deliveryNeedsConfirmation
-              ? "The delivery fee isn't included yet, so send the confirmation message below on WhatsApp first — you can pay via QRIS once we confirm the final amount."
-              : "Please pay the exact amount below via QRIS, then send us the confirmation message on WhatsApp."}
+              ? "The delivery fee is not included in the total just yet.\n\nPlease send the confirmation message below to our WhatsApp and our team will confirm your final total."
+              : "Please pay the exact amount to the bank details below, then send us your payment proof along with the confirmation message via WhatsApp."}
           </p>
         </div>
 
-        <div className="rounded-xl bg-brand-cream p-4 text-center">
-          <p className="text-sm text-stone-600">
-            {confirmedOrder.deliveryNeedsConfirmation
-              ? "Amount to pay (items only)"
-              : "Amount to pay"}
-          </p>
-          <p className="text-3xl font-bold text-stone-900">
-            {formatIDR(confirmedOrder.grandTotal)}
-          </p>
-          {confirmedOrder.deliveryNeedsConfirmation && (
-            <p className="mt-1 text-xs text-stone-700">
-              Delivery fee not yet included — we&apos;ll confirm it with you
-              on WhatsApp.
-            </p>
-          )}
-        </div>
+        {!confirmedOrder.deliveryNeedsConfirmation && (
+          <div className="space-y-3 rounded-xl bg-brand-cream p-4">
+            <div className="text-center">
+              <p className="text-sm text-stone-600">Amount to pay</p>
+              <div className="mt-1 flex items-center justify-center gap-2">
+                <p className="text-3xl font-bold text-stone-900">
+                  {formatIDR(confirmedOrder.grandTotal)}
+                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyToClipboard(
+                      String(confirmedOrder.grandTotal),
+                      setCopiedAmount
+                    )
+                  }
+                  className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs font-medium text-stone-700 hover:bg-stone-100"
+                >
+                  {copiedAmount ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            </div>
 
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={qrisImageUrl}
-          alt="QRIS payment code"
-          className="mx-auto w-64 rounded-lg border border-stone-200"
-        />
+            <div className="space-y-2 rounded-lg bg-white p-3 text-sm">
+              <div>
+                <p className="text-stone-500">Bank</p>
+                <p className="font-medium text-stone-900">
+                  {BANK_DETAILS.bankName}
+                </p>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-stone-500">Account number</p>
+                  <p className="font-medium text-stone-900">
+                    {BANK_DETAILS.accountNumber}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyToClipboard(BANK_DETAILS.accountNumber, setCopiedAccount)
+                  }
+                  className="shrink-0 rounded-lg border border-stone-300 px-2 py-1 text-xs font-medium text-stone-700 hover:bg-stone-100"
+                >
+                  {copiedAccount ? "Copied!" : "Copy"}
+                </button>
+              </div>
+              <div>
+                <p className="text-stone-500">Account holder</p>
+                <p className="font-medium text-stone-900">
+                  {BANK_DETAILS.accountHolder}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div>
           <p className="mb-2 text-sm font-medium text-stone-700">
@@ -312,14 +359,10 @@ export default function OrderForm({
           <div className="mt-3 flex gap-3">
             <button
               type="button"
-              onClick={async () => {
-                await navigator.clipboard.writeText(message);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
+              onClick={() => copyToClipboard(message, setCopiedMessage)}
               className="flex-1 rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
             >
-              {copied ? "Copied!" : "Copy message"}
+              {copiedMessage ? "Copied!" : "Copy message"}
             </button>
             <a
               href={waLink}
@@ -331,6 +374,12 @@ export default function OrderForm({
             </a>
           </div>
         </div>
+
+        <p className="text-center text-sm text-stone-600">
+          {confirmedOrder.deliveryNeedsConfirmation
+            ? "We'll start preparing your order as soon as we receive your payment confirmation."
+            : "We'll start baking your order as soon as your payment is confirmed."}
+        </p>
 
         <button
           type="button"

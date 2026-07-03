@@ -25,8 +25,6 @@ export default async function Home() {
     label: b.label,
   }));
 
-  const qrisImageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/payment-assets/qris.png`;
-
   return (
     <div className="min-h-screen bg-brand-cream px-4 py-10">
       <header className="mx-auto mb-8 max-w-lg text-center">
@@ -52,7 +50,6 @@ export default async function Home() {
         menuItems={menuItems ?? []}
         deliveryZones={deliveryZones ?? []}
         batchDates={batchDates}
-        qrisImageUrl={qrisImageUrl}
       />
     </div>
   );
