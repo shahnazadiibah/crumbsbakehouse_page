@@ -27,6 +27,9 @@ function formatQty(qty: number): number {
   return Number(qty.toFixed(2));
 }
 
+const inputClass =
+  "w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900 placeholder:text-stone-500";
+
 function IngredientForm({
   initial,
   onSubmit,
@@ -83,6 +86,82 @@ function IngredientForm({
   );
 }
 
+function IngredientEditRow({
+  ingredient,
+  onSave,
+  onCancel,
+  isPending,
+}: {
+  ingredient: Ingredient;
+  onSave: (input: IngredientInput) => void;
+  onCancel: () => void;
+  isPending: boolean;
+}) {
+  const [form, setForm] = useState<IngredientInput>({
+    name: ingredient.name,
+    unit: ingredient.unit,
+    costPerUnit: ingredient.cost_per_unit,
+    stock: ingredient.stock,
+  });
+
+  return (
+    <tr>
+      <td className="px-4 py-2 align-top">
+        <input
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          className={inputClass}
+        />
+      </td>
+      <td className="px-4 py-2 align-top">
+        <input
+          value={form.unit}
+          onChange={(e) => setForm({ ...form, unit: e.target.value })}
+          className={inputClass}
+        />
+      </td>
+      <td className="px-4 py-2 align-top">
+        <input
+          type="number"
+          value={form.costPerUnit}
+          onChange={(e) =>
+            setForm({ ...form, costPerUnit: Number(e.target.value) })
+          }
+          className={inputClass}
+        />
+      </td>
+      <td className="px-4 py-2 align-top">
+        <input
+          type="number"
+          value={form.stock}
+          onChange={(e) =>
+            setForm({ ...form, stock: Number(e.target.value) })
+          }
+          className={inputClass}
+        />
+      </td>
+      <td className="px-4 py-2 align-top text-stone-400">—</td>
+      <td className="px-4 py-2 align-top text-stone-400">—</td>
+      <td className="px-4 py-2 align-top text-right whitespace-nowrap">
+        <button
+          disabled={isPending}
+          onClick={() => onSave(form)}
+          className="mr-3 font-medium text-brand-olive hover:underline"
+        >
+          Save
+        </button>
+        <button
+          disabled={isPending}
+          onClick={onCancel}
+          className="font-medium text-stone-500 hover:underline"
+        >
+          Cancel
+        </button>
+      </td>
+    </tr>
+  );
+}
+
 export default function IngredientsManager({
   ingredients,
   neededByIngredient,
@@ -114,25 +193,18 @@ export default function IngredientsManager({
               const toBuy = Math.max(0, needed - ing.stock);
 
               return editingId === ing.id ? (
-                <tr key={ing.id}>
-                  <td colSpan={7} className="px-4 py-3">
-                    <IngredientForm
-                      initial={{
-                        name: ing.name,
-                        unit: ing.unit,
-                        costPerUnit: ing.cost_per_unit,
-                        stock: ing.stock,
-                      }}
-                      submitLabel="Save"
-                      onSubmit={(input) =>
-                        startTransition(async () => {
-                          await updateIngredient(ing.id, input);
-                          setEditingId(null);
-                        })
-                      }
-                    />
-                  </td>
-                </tr>
+                <IngredientEditRow
+                  key={ing.id}
+                  ingredient={ing}
+                  isPending={isPending}
+                  onCancel={() => setEditingId(null)}
+                  onSave={(input) =>
+                    startTransition(async () => {
+                      await updateIngredient(ing.id, input);
+                      setEditingId(null);
+                    })
+                  }
+                />
               ) : (
                 <tr key={ing.id} className={toBuy > 0 ? "bg-red-50" : ""}>
                   <td className="px-4 py-3 font-medium text-stone-900">

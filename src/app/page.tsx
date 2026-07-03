@@ -28,9 +28,8 @@ export default async function Home() {
   const qrisImageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/payment-assets/qris.png`;
 
   return (
-    <div className="min-h-screen bg-stone-100 px-4 py-10">
+    <div className="min-h-screen bg-brand-cream px-4 py-10">
       <header className="mx-auto mb-8 max-w-lg text-center">
-        <h1 className="sr-only">Crumbs Bakehouse</h1>
         <Image
           src="/page_header.png"
           alt="Crumbs Bakehouse"
@@ -39,9 +38,13 @@ export default async function Home() {
           className="h-auto w-full rounded-2xl"
           priority
         />
-        <p className="mt-3 text-sm text-stone-600">
-          Weekly Saturday pre-order — pick your batch, place your order, pay
-          via QRIS.
+        <h1 className="mt-4 text-2xl font-bold text-stone-900">
+          Crumbs Bakehouse Pre-Order Page
+        </h1>
+        <p className="mt-2 text-sm text-stone-600">
+          You&apos;re one step away from our warm, freshly baked treat! Fill
+          out the form below and let us know what we&apos;d love to bake
+          fresh for you.
         </p>
       </header>
 

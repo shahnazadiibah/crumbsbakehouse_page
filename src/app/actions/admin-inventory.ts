@@ -27,6 +27,7 @@ export async function addIngredient(input: IngredientInput) {
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
   return { ok: true };
 }
 
@@ -46,6 +47,7 @@ export async function updateIngredient(id: string, input: IngredientInput) {
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
   return { ok: true };
 }
 
@@ -57,6 +59,7 @@ export async function deleteIngredient(id: string) {
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
   return { ok: true };
 }
 
@@ -88,5 +91,6 @@ export async function saveRecipe(
   }
 
   revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
   return { ok: true };
 }

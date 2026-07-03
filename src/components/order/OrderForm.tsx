@@ -105,7 +105,7 @@ function buildWhatsAppMessage(order: ConfirmedOrder): string {
 
   lines.push(
     "",
-    `Order ID: ${order.id}`,
+    `Order ID: ${order.id.slice(0, 8).toUpperCase()}`,
     "",
     "Saya sudah transfer via QRIS sesuai jumlah di atas. Mohon dikonfirmasi ya. Terima kasih! \u{1F64F}"
   );
@@ -327,7 +327,7 @@ export default function OrderForm({
               rel="noopener noreferrer"
               className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-green-700"
             >
-              Open WhatsApp
+              Send via WhatsApp
             </a>
           </div>
         </div>
@@ -382,7 +382,7 @@ export default function OrderForm({
 
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
-          2. Menu
+          2. Order
         </h2>
         <div className="space-y-3">
           {menuItems.map((item) => {
