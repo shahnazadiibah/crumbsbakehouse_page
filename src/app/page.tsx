@@ -34,8 +34,8 @@ export default async function Home() {
         <Image
           src="/page_header.png"
           alt="Crumbs Bakehouse"
-          width={600}
-          height={200}
+          width={1875}
+          height={625}
           className="h-auto w-full rounded-2xl"
           priority
         />
