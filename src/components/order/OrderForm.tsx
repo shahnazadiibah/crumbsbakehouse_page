@@ -598,7 +598,7 @@ export default function OrderForm({
           <p className="mt-2 rounded-lg bg-brand-cream p-3 text-sm text-stone-700">
             The delivery fee for this option isn&apos;t fixed — we&apos;ll
             confirm the exact price with you on WhatsApp. It isn&apos;t
-            included in the QRIS amount below.
+            included in the total below.
           </p>
         )}
         {showSameDayBikeNote && (
@@ -629,6 +629,49 @@ export default function OrderForm({
           className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
         />
       </section>
+
+      {hasItems && (
+        <section className="space-y-2 rounded-lg border border-stone-200 p-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
+            Order summary
+          </h2>
+          <div className="space-y-1 text-sm">
+            {menuItems
+              .filter((item) => (quantities[item.id] ?? 0) > 0)
+              .map((item) => {
+                const qty = quantities[item.id] ?? 0;
+                const topper =
+                  isWholeCakeItem(item.name) && cakeTopper.trim()
+                    ? cakeTopper.trim()
+                    : null;
+                return (
+                  <div
+                    key={item.id}
+                    className="flex justify-between text-stone-700"
+                  >
+                    <span>
+                      {qty}x {item.name}
+                      {topper && (
+                        <span className="text-stone-500">
+                          {" "}
+                          (Topper: &quot;{topper}&quot;)
+                        </span>
+                      )}
+                    </span>
+                    <span>{formatIDR(item.price * qty)}</span>
+                  </div>
+                );
+              })}
+          </div>
+          <div className="space-y-0.5 border-t border-stone-200 pt-2 text-xs text-stone-500">
+            <p>
+              Batch date:{" "}
+              {batchDates.find((b) => b.date === batchDate)?.label ?? "—"}
+            </p>
+            <p>Delivery: {selectedZone?.name ?? "—"}</p>
+          </div>
+        </section>
+      )}
 
       <section className="space-y-1 rounded-lg bg-stone-50 p-4 text-sm">
         <div className="flex justify-between">
