@@ -77,13 +77,22 @@ export async function submitOrder(
   const supabase = createAdminClient();
 
   const menuItemIds = selectedItems.map((i) => i.menuItemId);
-  const { data: menuItems, error: menuError } = await supabase
-    .from("menu_items")
-    .select("id, name, price, active")
-    .in("id", menuItemIds);
+  const [
+    { data: menuItems, error: menuError },
+    { data: allZones, error: zonesError },
+  ] = await Promise.all([
+    supabase
+      .from("menu_items")
+      .select("id, name, price, active")
+      .in("id", menuItemIds),
+    supabase.from("delivery_zones").select("id, name, fee"),
+  ]);
 
   if (menuError || !menuItems) {
     return { ok: false, error: "Could not load menu. Please try again." };
+  }
+  if (zonesError || !allZones) {
+    return { ok: false, error: "Could not load delivery options. Please try again." };
   }
 
   const items: OrderItem[] = [];
@@ -103,14 +112,6 @@ export async function submitOrder(
       qty: sel.qty,
       ...(topper && isWholeCakeItem(menuItem.name) ? { topper } : {}),
     });
-  }
-
-  const { data: allZones, error: zonesError } = await supabase
-    .from("delivery_zones")
-    .select("id, name, fee");
-
-  if (zonesError || !allZones) {
-    return { ok: false, error: "Could not load delivery options. Please try again." };
   }
 
   const selectedZone = allZones.find((z) => z.id === input.zoneId);
