@@ -36,8 +36,8 @@ export default async function Home() {
           className="h-auto w-full rounded-2xl"
           priority
         />
-        <h1 className="mt-4 text-2xl font-bold text-stone-900">
-          Crumbs Bakehouse Pre-Order Page
+        <h1 className="mt-4 font-heading text-2xl font-bold text-brand-olive">
+          Crumbs Bakehouse Pre-Order
         </h1>
         <p className="mt-2 text-sm text-stone-600">
           You&apos;re one step away from our warm, freshly baked treat! Fill
