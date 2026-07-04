@@ -141,7 +141,6 @@ export default function OrderForm({
   const [confirmedOrder, setConfirmedOrder] = useState<ConfirmedOrder | null>(
     null
   );
-  const [copiedMessage, setCopiedMessage] = useState(false);
   const [copiedAmount, setCopiedAmount] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -356,19 +355,12 @@ export default function OrderForm({
             rows={10}
             className="w-full rounded-lg border border-stone-300 bg-stone-50 p-3 text-sm text-stone-800"
           />
-          <div className="mt-3 flex gap-3">
-            <button
-              type="button"
-              onClick={() => copyToClipboard(message, setCopiedMessage)}
-              className="flex-1 rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
-            >
-              {copiedMessage ? "Copied!" : "Copy message"}
-            </button>
+          <div className="mt-3">
             <a
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-green-700"
+              className="block w-full rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-green-700"
             >
               Send via WhatsApp
             </a>
