@@ -289,11 +289,11 @@ export default function OrderForm({
         </div>
 
         {!confirmedOrder.deliveryNeedsConfirmation && (
-          <div className="space-y-3 rounded-xl bg-brand-cream p-4">
-            <div className="text-center">
-              <p className="text-sm text-stone-600">Amount to pay</p>
+          <div className="space-y-3">
+            <div className="rounded-xl bg-brand-olive p-4 text-center">
+              <p className="text-sm text-white/80">Amount to pay</p>
               <div className="mt-1 flex items-center justify-center gap-2">
-                <p className="text-3xl font-bold text-stone-900">
+                <p className="text-3xl font-bold text-white">
                   {formatIDR(confirmedOrder.grandTotal)}
                 </p>
                 <button
@@ -304,14 +304,14 @@ export default function OrderForm({
                       setCopiedAmount
                     )
                   }
-                  className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs font-medium text-stone-700 hover:bg-stone-100"
+                  className="rounded-lg border border-white/40 bg-white/10 px-2 py-1 text-xs font-medium text-white hover:bg-white/20"
                 >
                   {copiedAmount ? "Copied!" : "Copy"}
                 </button>
               </div>
             </div>
 
-            <div className="space-y-2 rounded-lg bg-white p-3 text-sm">
+            <div className="space-y-2 rounded-lg border border-stone-200 bg-white p-3 text-sm">
               <div>
                 <p className="text-stone-500">Bank</p>
                 <p className="font-medium text-stone-900">
@@ -346,8 +346,12 @@ export default function OrderForm({
         )}
 
         <div>
-          <p className="mb-2 text-sm font-medium text-stone-700">
-            Confirmation message
+          <p className="text-base font-semibold text-stone-900">
+            Last step: send this message on WhatsApp
+          </p>
+          <p className="mb-2 text-xs text-stone-500">
+            Your order isn&apos;t confirmed until we receive this on
+            WhatsApp.
           </p>
           <textarea
             readOnly
