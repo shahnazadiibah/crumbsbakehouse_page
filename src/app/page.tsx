@@ -1,12 +1,17 @@
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { getUpcomingBatchDates } from "@/lib/batchDates";
 import OrderForm from "@/components/order/OrderForm";
 
-export const dynamic = "force-dynamic";
+// Menu/delivery-zone data and the upcoming batch dates change rarely, so
+// a short revalidation window avoids hitting Supabase on every request
+// while still staying fresh well within the Friday-16:00-WIB cutoff.
+// Uses the cookie-free public client (see src/lib/supabase/public.ts) so
+// this actually gets cached instead of being forced dynamic.
+export const revalidate = 60;
 
 export default async function Home() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const [{ data: menuItems }, { data: deliveryZones }] = await Promise.all([
     supabase
