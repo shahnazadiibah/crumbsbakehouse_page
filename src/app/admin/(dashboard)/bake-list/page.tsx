@@ -12,35 +12,27 @@ export default async function BakeListPage({
   const { batch } = await searchParams;
   const supabase = await createClient();
 
-  const { data: batchRows } = await supabase
-    .from("orders")
-    .select("batch_date")
-    .order("batch_date");
+  const [{ data: allOrders }, { data: recipes }, { data: ingredients }] =
+    await Promise.all([
+      supabase.from("orders").select("batch_date, items").order("batch_date"),
+      supabase
+        .from("recipes")
+        .select("menu_item_id, ingredient_id, qty_per_unit"),
+      supabase.from("ingredients").select("id, name, unit"),
+    ]);
 
   const dates = Array.from(
-    new Set((batchRows ?? []).map((r) => r.batch_date))
+    new Set((allOrders ?? []).map((r) => r.batch_date))
   ).sort();
 
   const today = new Date().toISOString().slice(0, 10);
   const defaultDate = dates.find((d) => d >= today) ?? dates[dates.length - 1];
   const selected = batch && dates.includes(batch) ? batch : defaultDate;
 
-  const [{ data: orders }, { data: recipes }, { data: ingredients }] =
-    selected
-      ? await Promise.all([
-          supabase
-            .from("orders")
-            .select("items")
-            .eq("batch_date", selected),
-          supabase
-            .from("recipes")
-            .select("menu_item_id, ingredient_id, qty_per_unit"),
-          supabase.from("ingredients").select("id, name, unit"),
-        ])
-      : [{ data: [] }, { data: [] }, { data: [] }];
+  const orders = (allOrders ?? []).filter((o) => o.batch_date === selected);
 
   const totals = new Map<string, number>();
-  for (const order of orders ?? []) {
+  for (const order of orders) {
     for (const item of order.items) {
       totals.set(item.name, (totals.get(item.name) ?? 0) + item.qty);
     }
@@ -63,7 +55,7 @@ export default async function BakeListPage({
   }
 
   const totalsByFamily = new Map<string, Map<string, number>>();
-  for (const order of orders ?? []) {
+  for (const order of orders) {
     for (const item of order.items) {
       const lines = recipesByMenuItem.get(item.menu_item_id) ?? [];
       if (lines.length === 0) continue;

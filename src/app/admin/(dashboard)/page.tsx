@@ -12,28 +12,26 @@ export default async function AdminOrdersPage({
   const { batch } = await searchParams;
   const supabase = await createClient();
 
-  const { data: batchRows } = await supabase
+  // Fetched once and filtered/sorted in JS below, rather than a first
+  // query for just the batch dates followed by a second query for the
+  // selected date's rows — with order volume this small, one round trip
+  // for everything is cheaper than two sequential ones.
+  const { data: allOrders } = await supabase
     .from("orders")
-    .select("batch_date")
-    .order("batch_date");
+    .select(
+      "id, customer_name, contact, batch_date, items, delivery_fee, items_total, grand_total, paid, status, notes, greeting_card, delivery_name, delivery_phone, delivery_address, pickup_time, created_at"
+    )
+    .order("created_at");
 
   const dates = Array.from(
-    new Set((batchRows ?? []).map((r) => r.batch_date))
+    new Set((allOrders ?? []).map((r) => r.batch_date))
   ).sort();
 
   const today = new Date().toISOString().slice(0, 10);
   const defaultDate = dates.find((d) => d >= today) ?? dates[dates.length - 1];
   const selected = batch && dates.includes(batch) ? batch : defaultDate;
 
-  const { data: orders } = selected
-    ? await supabase
-        .from("orders")
-        .select(
-          "id, customer_name, contact, items, delivery_fee, items_total, grand_total, paid, status, notes, greeting_card, delivery_name, delivery_phone, delivery_address, pickup_time"
-        )
-        .eq("batch_date", selected)
-        .order("created_at")
-    : { data: [] };
+  const orders = (allOrders ?? []).filter((o) => o.batch_date === selected);
 
   return (
     <div className="space-y-4">
@@ -53,7 +51,7 @@ export default async function AdminOrdersPage({
           No orders have been placed yet.
         </p>
       ) : (
-        <OrdersTable orders={orders ?? []} batchDate={selected} />
+        <OrdersTable orders={orders} batchDate={selected} />
       )}
     </div>
   );

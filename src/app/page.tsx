@@ -29,7 +29,7 @@ export default async function Home() {
     <div className="min-h-screen bg-brand-cream px-4 py-10">
       <header className="mx-auto mb-8 max-w-lg text-center">
         <Image
-          src="/page_header.png"
+          src="/page_header.jpg"
           alt="Crumbs Bakehouse"
           width={1875}
           height={625}

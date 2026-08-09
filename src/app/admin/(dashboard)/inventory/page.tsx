@@ -15,7 +15,7 @@ export default async function InventoryPage({
   const [
     { data: ingredients },
     { data: recipes },
-    { data: orderBatchDates },
+    { data: allOrders },
     { data: closedBatches },
   ] = await Promise.all([
     supabase
@@ -25,13 +25,13 @@ export default async function InventoryPage({
     supabase
       .from("recipes")
       .select("menu_item_id, ingredient_id, qty_per_unit"),
-    supabase.from("orders").select("batch_date").order("batch_date"),
+    supabase.from("orders").select("batch_date, items").order("batch_date"),
     supabase.from("batch_history").select("batch_date"),
   ]);
 
   const closedDates = new Set((closedBatches ?? []).map((b) => b.batch_date));
   const openDates = Array.from(
-    new Set((orderBatchDates ?? []).map((r) => r.batch_date))
+    new Set((allOrders ?? []).map((r) => r.batch_date))
   )
     .filter((d) => !closedDates.has(d))
     .sort();
@@ -42,12 +42,9 @@ export default async function InventoryPage({
   const selectedBatch =
     batch && openDates.includes(batch) ? batch : defaultDate;
 
-  const { data: batchOrders } = selectedBatch
-    ? await supabase
-        .from("orders")
-        .select("items")
-        .eq("batch_date", selectedBatch)
-    : { data: [] };
+  const batchOrders = (allOrders ?? []).filter(
+    (o) => o.batch_date === selectedBatch
+  );
 
   const recipesByMenuItem = new Map<
     string,
@@ -60,7 +57,7 @@ export default async function InventoryPage({
   }
 
   const neededByIngredient = new Map<string, number>();
-  for (const order of batchOrders ?? []) {
+  for (const order of batchOrders) {
     for (const item of order.items) {
       const lines = recipesByMenuItem.get(item.menu_item_id) ?? [];
       for (const line of lines) {
