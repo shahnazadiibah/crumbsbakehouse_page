@@ -92,7 +92,7 @@ export default async function BakeListPage({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-stone-900">Order Summary</h1>
+        <h1 className="text-xl font-semibold text-stone-900">Baking Guide</h1>
         {dates.length > 0 && (
           <BatchDateFilter
             dates={dates}

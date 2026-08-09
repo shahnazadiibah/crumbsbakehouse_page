@@ -87,8 +87,32 @@ export default function OrdersTable({
     );
   }
 
+  const itemTotals = new Map<string, number>();
+  for (const order of orders) {
+    for (const item of order.items) {
+      itemTotals.set(item.name, (itemTotals.get(item.name) ?? 0) + item.qty);
+    }
+  }
+  const itemSummary = Array.from(itemTotals.entries()).sort((a, b) =>
+    a[0].localeCompare(b[0])
+  );
+
   return (
     <div className="space-y-3">
+      <div className="rounded-xl border border-stone-200 bg-white p-4">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">
+          Order summary ({orders.length} order{orders.length === 1 ? "" : "s"})
+        </p>
+        <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+          {itemSummary.map(([name, qty]) => (
+            <div key={name} className="text-stone-700">
+              <span className="font-semibold text-stone-900">{qty}x</span>{" "}
+              {name}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="flex justify-end">
         <button
           onClick={() => exportOrders(orders, batchDate)}
