@@ -3,10 +3,10 @@ import LogoutButton from "@/components/admin/LogoutButton";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Orders" },
-  { href: "/admin/recipes", label: "Recipes" },
-  { href: "/admin/bake-list", label: "Bake list" },
+  { href: "/admin/bake-list", label: "Order Summary" },
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/batches", label: "Batches" },
+  { href: "/admin/recipes", label: "Recipes" },
 ];
 
 export default function DashboardLayout({

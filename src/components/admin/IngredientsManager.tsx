@@ -120,15 +120,8 @@ function IngredientEditRow({
           className={inputClass}
         />
       </td>
-      <td className="px-4 py-2 align-top">
-        <input
-          type="number"
-          value={form.costPerUnit}
-          onChange={(e) =>
-            setForm({ ...form, costPerUnit: Number(e.target.value) })
-          }
-          className={inputClass}
-        />
+      <td className="px-4 py-2 align-top text-stone-600">
+        {form.costPerUnit}
       </td>
       <td className="px-4 py-2 align-top">
         <input
