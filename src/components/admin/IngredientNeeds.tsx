@@ -4,7 +4,7 @@ import { useState } from "react";
 
 interface FamilyNeeds {
   family: string;
-  ingredients: { name: string; unit: string; qty: number }[];
+  ingredients: { name: string; unit: string; orderQty: number; baseQty: number }[];
 }
 
 export default function IngredientNeeds({
@@ -12,12 +12,14 @@ export default function IngredientNeeds({
 }: {
   families: FamilyNeeds[];
 }) {
-  const [portions, setPortions] = useState<Record<string, number>>({});
+  // Undefined/null = show the default (total for this batch's orders).
+  // Once set, shows portion x the single-recipe ingredient amount instead.
+  const [portions, setPortions] = useState<Record<string, number | null>>({});
 
   return (
     <div className="space-y-4">
       {families.map(({ family, ingredients }) => {
-        const portion = portions[family] ?? 1;
+        const portion = portions[family] ?? null;
 
         return (
           <div key={family} className="space-y-2">
@@ -29,29 +31,35 @@ export default function IngredientNeeds({
                   type="number"
                   min={0}
                   step={0.5}
-                  value={portion}
+                  placeholder="Order total"
+                  value={portion ?? ""}
                   onChange={(e) =>
                     setPortions((prev) => ({
                       ...prev,
-                      [family]: Number(e.target.value),
+                      [family]:
+                        e.target.value === "" ? null : Number(e.target.value),
                     }))
                   }
-                  className="w-16 rounded-lg border border-stone-300 p-1 text-sm text-stone-900"
+                  className="w-24 rounded-lg border border-stone-300 p-1 text-sm text-stone-900"
                 />
               </label>
             </div>
             <div className="divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
-              {ingredients.map((ing) => (
-                <div
-                  key={ing.name}
-                  className="flex items-center justify-between px-4 py-3 text-sm"
-                >
-                  <span className="text-stone-900">{ing.name}</span>
-                  <span className="font-semibold text-stone-900">
-                    {Number((ing.qty * portion).toFixed(2))} {ing.unit}
-                  </span>
-                </div>
-              ))}
+              {ingredients.map((ing) => {
+                const qty =
+                  portion === null ? ing.orderQty : ing.baseQty * portion;
+                return (
+                  <div
+                    key={ing.name}
+                    className="flex items-center justify-between px-4 py-3 text-sm"
+                  >
+                    <span className="text-stone-900">{ing.name}</span>
+                    <span className="font-semibold text-stone-900">
+                      {Number(qty.toFixed(2))} {ing.unit}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         );

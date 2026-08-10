@@ -74,20 +74,61 @@ export default async function BakeListPage({
     }
   }
 
-  const ingredientNeedsByFamily = Array.from(totalsByFamily.entries())
-    .map(([family, ingredientTotals]) => ({
+  // The "individual recipe amount" for a family is the recipe of whichever
+  // of its menu items uses the most ingredients in total (the full-size
+  // variant, e.g. the whole loaf/cake) — the other variants (slice, cup)
+  // are fractions of that same recipe, not separate recipes.
+  const familyToMenuItems = new Map<string, string[]>();
+  const menuItemNameById = new Map<string, string>();
+  for (const order of orders) {
+    for (const item of order.items) {
+      menuItemNameById.set(item.menu_item_id, item.name);
+    }
+  }
+  for (const [menuItemId, name] of menuItemNameById) {
+    const family = getProductFamily(name);
+    const list = familyToMenuItems.get(family) ?? [];
+    list.push(menuItemId);
+    familyToMenuItems.set(family, list);
+  }
+
+  const baseRecipeByFamily = new Map<string, Map<string, number>>();
+  for (const [family, menuItemIds] of familyToMenuItems) {
+    let bestMenuItemId: string | null = null;
+    let bestTotal = -1;
+    for (const menuItemId of menuItemIds) {
+      const lines = recipesByMenuItem.get(menuItemId) ?? [];
+      const total = lines.reduce((sum, l) => sum + l.qty_per_unit, 0);
+      if (total > bestTotal) {
+        bestTotal = total;
+        bestMenuItemId = menuItemId;
+      }
+    }
+    const lines = bestMenuItemId ? recipesByMenuItem.get(bestMenuItemId) ?? [] : [];
+    baseRecipeByFamily.set(
       family,
-      ingredients: Array.from(ingredientTotals.entries())
-        .map(([ingredientId, qty]) => {
-          const ing = ingredientById.get(ingredientId);
-          return {
-            name: ing?.name ?? "Unknown ingredient",
-            unit: ing?.unit ?? "",
-            qty,
-          };
-        })
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    }))
+      new Map(lines.map((l) => [l.ingredient_id, l.qty_per_unit]))
+    );
+  }
+
+  const ingredientNeedsByFamily = Array.from(totalsByFamily.entries())
+    .map(([family, ingredientTotals]) => {
+      const baseRecipe = baseRecipeByFamily.get(family) ?? new Map();
+      return {
+        family,
+        ingredients: Array.from(ingredientTotals.entries())
+          .map(([ingredientId, qty]) => {
+            const ing = ingredientById.get(ingredientId);
+            return {
+              name: ing?.name ?? "Unknown ingredient",
+              unit: ing?.unit ?? "",
+              orderQty: qty,
+              baseQty: baseRecipe.get(ingredientId) ?? 0,
+            };
+          })
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      };
+    })
     .sort((a, b) => a.family.localeCompare(b.family));
 
   return (
