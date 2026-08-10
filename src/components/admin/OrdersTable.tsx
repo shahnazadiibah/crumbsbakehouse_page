@@ -1,20 +1,21 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   deleteOrder,
   setOrderPaid,
   setOrderStatus,
+  updateOrderItems,
 } from "@/app/actions/admin-orders";
 import { downloadCsv } from "@/lib/csv";
 import { formatIDR } from "@/lib/format";
-import type { OrderStatus } from "@/lib/supabase/types";
+import type { OrderItem, OrderStatus } from "@/lib/supabase/types";
 
 interface OrderRow {
   id: string;
   customer_name: string;
   contact: string;
-  items: { name: string; price: number; qty: number; topper?: string }[];
+  items: OrderItem[];
   delivery_fee: number;
   items_total: number;
   grand_total: number;
@@ -78,6 +79,8 @@ export default function OrdersTable({
   batchDate: string;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editItems, setEditItems] = useState<OrderItem[]>([]);
 
   if (orders.length === 0) {
     return (
@@ -158,17 +161,41 @@ export default function OrdersTable({
                   )}
                 </td>
                 <td className="px-4 py-3 align-top">
-                  {order.items.map((item, i) => (
-                    <div key={i}>
-                      {item.qty}x {item.name}
-                      {item.topper && (
-                        <span className="font-medium text-stone-700">
-                          {" "}
-                          — Topper: &quot;{item.topper}&quot;
-                        </span>
-                      )}
+                  {editingId === order.id ? (
+                    <div className="space-y-1">
+                      {editItems.map((item, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min={0}
+                            value={item.qty}
+                            onChange={(e) => {
+                              const qty = Number(e.target.value);
+                              setEditItems((prev) =>
+                                prev.map((it, idx) =>
+                                  idx === i ? { ...it, qty } : it
+                                )
+                              );
+                            }}
+                            className="w-16 rounded-lg border border-stone-300 p-1 text-sm text-stone-900"
+                          />
+                          <span>x {item.name}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  ) : (
+                    order.items.map((item, i) => (
+                      <div key={i}>
+                        {item.qty}x {item.name}
+                        {item.topper && (
+                          <span className="font-medium text-stone-700">
+                            {" "}
+                            — Topper: &quot;{item.topper}&quot;
+                          </span>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </td>
                 <td className="px-4 py-3 align-top">
                   <p className="font-medium text-stone-900">
@@ -221,24 +248,59 @@ export default function OrdersTable({
                   {order.notes && <p>{order.notes}</p>}
                   {!order.greeting_card && !order.notes && "—"}
                 </td>
-                <td className="px-4 py-3 align-top">
-                  <button
-                    disabled={isPending}
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          `Delete ${order.customer_name}'s order? This can't be undone.`
-                        )
-                      ) {
-                        startTransition(() => {
-                          deleteOrder(order.id);
-                        });
-                      }
-                    }}
-                    className="text-red-600 hover:underline"
-                  >
-                    Delete
-                  </button>
+                <td className="px-4 py-3 align-top whitespace-nowrap">
+                  {editingId === order.id ? (
+                    <>
+                      <button
+                        disabled={isPending}
+                        onClick={() =>
+                          startTransition(async () => {
+                            await updateOrderItems(order.id, editItems);
+                            setEditingId(null);
+                          })
+                        }
+                        className="mr-3 font-medium text-brand-olive hover:underline"
+                      >
+                        Save
+                      </button>
+                      <button
+                        disabled={isPending}
+                        onClick={() => setEditingId(null)}
+                        className="font-medium text-stone-500 hover:underline"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          setEditingId(order.id);
+                          setEditItems(order.items);
+                        }}
+                        className="mr-3 font-medium text-stone-700 hover:underline"
+                      >
+                        Edit qty
+                      </button>
+                      <button
+                        disabled={isPending}
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Delete ${order.customer_name}'s order? This can't be undone.`
+                            )
+                          ) {
+                            startTransition(() => {
+                              deleteOrder(order.id);
+                            });
+                          }
+                        }}
+                        className="text-red-600 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

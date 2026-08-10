@@ -31,7 +31,9 @@ export default async function AdminOrdersPage({
   const defaultDate = dates.find((d) => d >= today) ?? dates[dates.length - 1];
   const selected = batch && dates.includes(batch) ? batch : defaultDate;
 
-  const orders = (allOrders ?? []).filter((o) => o.batch_date === selected);
+  const orders = (allOrders ?? [])
+    .filter((o) => o.batch_date === selected)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   return (
     <div className="space-y-4">

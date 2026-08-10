@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import BatchDateFilter from "@/components/admin/BatchDateFilter";
+import IngredientNeeds from "@/components/admin/IngredientNeeds";
 import { getProductFamily } from "@/lib/menuRules";
 
 export const dynamic = "force-dynamic";
@@ -135,26 +136,7 @@ export default async function BakeListPage({
                 Inventory page.
               </p>
             ) : (
-              ingredientNeedsByFamily.map(({ family, ingredients }) => (
-                <div key={family} className="space-y-2">
-                  <h3 className="text-sm font-medium text-stone-700">
-                    {family}
-                  </h3>
-                  <div className="divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
-                    {ingredients.map((ing) => (
-                      <div
-                        key={ing.name}
-                        className="flex items-center justify-between px-4 py-3 text-sm"
-                      >
-                        <span className="text-stone-900">{ing.name}</span>
-                        <span className="font-semibold text-stone-900">
-                          {Number(ing.qty.toFixed(2))} {ing.unit}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))
+              <IngredientNeeds families={ingredientNeedsByFamily} />
             )}
           </div>
         </>
