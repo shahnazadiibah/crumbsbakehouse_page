@@ -39,22 +39,16 @@ export async function setOrderStatus(orderId: string, status: OrderStatus) {
   return { ok: true };
 }
 
-export async function updateOrderItems(orderId: string, items: OrderItem[]) {
+export async function updateOrderItems(
+  orderId: string,
+  items: OrderItem[],
+  deliveryFee: number
+) {
   await requireAdmin();
   const supabase = await createClient();
 
-  const { data: order, error: fetchError } = await supabase
-    .from("orders")
-    .select("delivery_fee")
-    .eq("id", orderId)
-    .single();
-
-  if (fetchError || !order) {
-    return { ok: false, error: fetchError?.message ?? "Order not found" };
-  }
-
   const items_total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const grand_total = items_total + order.delivery_fee;
+  const grand_total = items_total + deliveryFee;
 
   const { error } = await supabase
     .from("orders")

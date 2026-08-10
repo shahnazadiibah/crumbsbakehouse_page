@@ -255,7 +255,11 @@ export default function OrdersTable({
                         disabled={isPending}
                         onClick={() =>
                           startTransition(async () => {
-                            await updateOrderItems(order.id, editItems);
+                            await updateOrderItems(
+                              order.id,
+                              editItems,
+                              order.delivery_fee
+                            );
                             setEditingId(null);
                           })
                         }
