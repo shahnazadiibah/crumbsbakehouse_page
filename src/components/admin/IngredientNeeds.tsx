@@ -7,6 +7,16 @@ interface FamilyNeeds {
   ingredients: { name: string; unit: string; orderQty: number; baseQty: number }[];
 }
 
+const BAKING_NOTES: Record<string, string[]> = {
+  "Carrot Cake": [
+    "3 x 16.5cm diam pan | 360g batter each pan | Bake 170degC for 30mins",
+    "18 x 8cm diam pan | 60g batter each pan | Bake 170degC for 30mins | 1 rack max in the oven",
+  ],
+  "Banana Bread": [
+    "1 x 27x12cm pan | 1180g batter each pan | Bake 160degC for 1hour15mins",
+  ],
+};
+
 export default function IngredientNeeds({
   families,
 }: {
@@ -20,6 +30,7 @@ export default function IngredientNeeds({
     <div className="space-y-4">
       {families.map(({ family, ingredients }) => {
         const portion = portions[family] ?? null;
+        const notes = BAKING_NOTES[family];
 
         return (
           <div key={family} className="space-y-2">
@@ -44,6 +55,13 @@ export default function IngredientNeeds({
                 />
               </label>
             </div>
+            {notes && (
+              <ul className="space-y-1 rounded-xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-700">
+                {notes.map((note) => (
+                  <li key={note}>{note}</li>
+                ))}
+              </ul>
+            )}
             <div className="divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
               {ingredients.map((ing) => {
                 const qty =
