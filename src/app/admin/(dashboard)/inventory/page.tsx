@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import BatchDateFilter from "@/components/admin/BatchDateFilter";
 import IngredientsManager from "@/components/admin/IngredientsManager";
+import PackagingManager from "@/components/admin/PackagingManager";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +15,17 @@ export default async function InventoryPage({
 
   const [
     { data: ingredients },
+    { data: packagingItems },
     { data: recipes },
     { data: allOrders },
     { data: closedBatches },
   ] = await Promise.all([
     supabase
       .from("ingredients")
+      .select("id, name, unit, cost_per_unit, stock")
+      .order("name"),
+    supabase
+      .from("packaging_items")
       .select("id, name, unit, cost_per_unit, stock")
       .order("name"),
     supabase
@@ -95,6 +101,11 @@ export default async function InventoryPage({
           ingredients={ingredients ?? []}
           neededByIngredient={Object.fromEntries(neededByIngredient)}
         />
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-stone-900">Packaging</h2>
+        <PackagingManager items={packagingItems ?? []} />
       </section>
     </div>
   );

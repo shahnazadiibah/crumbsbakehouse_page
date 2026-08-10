@@ -126,6 +126,28 @@ export interface Database {
         >;
         Relationships: [];
       };
+      packaging_items: {
+        Row: {
+          id: string;
+          name: string;
+          unit: string;
+          cost_per_unit: number;
+          stock: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          unit?: string;
+          cost_per_unit?: number;
+          stock?: number;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["packaging_items"]["Insert"]
+        >;
+        Relationships: [];
+      };
       recipes: {
         Row: {
           id: string;
