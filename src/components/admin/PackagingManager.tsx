@@ -28,8 +28,10 @@ const inputClass =
 
 export default function PackagingManager({
   items,
+  neededByPackaging,
 }: {
   items: PackagingItem[];
+  neededByPackaging: Record<string, number>;
 }) {
   const [isPending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -46,12 +48,17 @@ export default function PackagingManager({
               <th className="px-4 py-3">Unit</th>
               <th className="px-4 py-3">Cost/unit</th>
               <th className="px-4 py-3">Stock</th>
+              <th className="px-4 py-3">Needed for batch</th>
+              <th className="px-4 py-3">To buy</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
-            {items.map((item) =>
-              editingId === item.id ? (
+            {items.map((item) => {
+              const needed = neededByPackaging[item.id] ?? 0;
+              const toBuy = Math.max(0, needed - item.stock);
+
+              return editingId === item.id ? (
                 <tr key={item.id}>
                   <td className="px-4 py-2 align-top text-stone-600">
                     {item.name}
@@ -70,6 +77,8 @@ export default function PackagingManager({
                       className={inputClass}
                     />
                   </td>
+                  <td className="px-4 py-2 align-top text-stone-400">—</td>
+                  <td className="px-4 py-2 align-top text-stone-400">—</td>
                   <td className="px-4 py-2 align-top text-right whitespace-nowrap">
                     <button
                       disabled={isPending}
@@ -93,7 +102,7 @@ export default function PackagingManager({
                   </td>
                 </tr>
               ) : (
-                <tr key={item.id}>
+                <tr key={item.id} className={toBuy > 0 ? "bg-red-50" : ""}>
                   <td className="px-4 py-3 font-medium text-stone-900">
                     {item.name}
                   </td>
@@ -104,6 +113,18 @@ export default function PackagingManager({
                     {item.cost_per_unit}
                   </td>
                   <td className="px-4 py-3 text-stone-600">{item.stock}</td>
+                  <td className="px-4 py-3 text-stone-600">
+                    {Number(needed.toFixed(2))}
+                  </td>
+                  <td className="px-4 py-3 text-stone-600">
+                    {toBuy > 0 ? (
+                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                        Buy {Number(toBuy.toFixed(2))} {item.unit}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => {
@@ -127,8 +148,8 @@ export default function PackagingManager({
                     </button>
                   </td>
                 </tr>
-              )
-            )}
+              );
+            })}
           </tbody>
         </table>
       </div>

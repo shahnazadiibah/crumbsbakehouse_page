@@ -17,6 +17,7 @@ export default async function InventoryPage({
     { data: ingredients },
     { data: packagingItems },
     { data: recipes },
+    { data: packagingRecipes },
     { data: allOrders },
     { data: closedBatches },
   ] = await Promise.all([
@@ -31,6 +32,9 @@ export default async function InventoryPage({
     supabase
       .from("recipes")
       .select("menu_item_id, ingredient_id, qty_per_unit"),
+    supabase
+      .from("packaging_recipes")
+      .select("menu_item_id, packaging_item_id, qty_per_unit"),
     supabase.from("orders").select("batch_date, items").order("batch_date"),
     supabase.from("batch_history").select("batch_date"),
   ]);
@@ -76,27 +80,57 @@ export default async function InventoryPage({
     }
   }
 
+  const packagingRecipesByMenuItem = new Map<
+    string,
+    { packaging_item_id: string; qty_per_unit: number }[]
+  >();
+  for (const r of packagingRecipes ?? []) {
+    const list = packagingRecipesByMenuItem.get(r.menu_item_id) ?? [];
+    list.push({
+      packaging_item_id: r.packaging_item_id,
+      qty_per_unit: r.qty_per_unit,
+    });
+    packagingRecipesByMenuItem.set(r.menu_item_id, list);
+  }
+
+  const neededByPackaging = new Map<string, number>();
+  for (const order of batchOrders) {
+    for (const item of order.items) {
+      const lines = packagingRecipesByMenuItem.get(item.menu_item_id) ?? [];
+      for (const line of lines) {
+        neededByPackaging.set(
+          line.packaging_item_id,
+          (neededByPackaging.get(line.packaging_item_id) ?? 0) +
+            line.qty_per_unit * item.qty
+        );
+      }
+    }
+  }
+
   return (
     <div className="space-y-8">
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-stone-900">
-            Ingredients
-          </h1>
-          {openDates.length > 0 && (
-            <BatchDateFilter
-              dates={openDates}
-              selected={selectedBatch}
-              basePath="/admin/inventory"
-            />
-          )}
-        </div>
-        {openDates.length === 0 && (
-          <p className="text-sm text-stone-500">
-            No open batches yet — &quot;Needed for batch&quot; and &quot;To
-            buy&quot; will show once there are orders for an upcoming batch.
-          </p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-stone-500">
+          &quot;Needed for batch&quot; and &quot;To buy&quot; are calculated
+          for the batch selected here.
+        </p>
+        {openDates.length > 0 && (
+          <BatchDateFilter
+            dates={openDates}
+            selected={selectedBatch}
+            basePath="/admin/inventory"
+          />
         )}
+      </div>
+      {openDates.length === 0 && (
+        <p className="text-sm text-stone-500">
+          No open batches yet — &quot;Needed for batch&quot; and &quot;To
+          buy&quot; will show once there are orders for an upcoming batch.
+        </p>
+      )}
+
+      <section className="space-y-3">
+        <h1 className="text-xl font-semibold text-stone-900">Ingredients</h1>
         <IngredientsManager
           ingredients={ingredients ?? []}
           neededByIngredient={Object.fromEntries(neededByIngredient)}
@@ -105,7 +139,10 @@ export default async function InventoryPage({
 
       <section className="space-y-3">
         <h2 className="text-xl font-semibold text-stone-900">Packaging</h2>
-        <PackagingManager items={packagingItems ?? []} />
+        <PackagingManager
+          items={packagingItems ?? []}
+          neededByPackaging={Object.fromEntries(neededByPackaging)}
+        />
       </section>
     </div>
   );
