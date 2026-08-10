@@ -44,6 +44,40 @@ export async function updatePackagingStock(id: string, stock: number) {
   return { ok: true };
 }
 
+export async function savePackagingRecipe(
+  menuItemId: string,
+  lines: { packagingItemId: string; qtyPerUnit: number }[]
+) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error: deleteError } = await supabase
+    .from("packaging_recipes")
+    .delete()
+    .eq("menu_item_id", menuItemId);
+
+  if (deleteError) return { ok: false, error: deleteError.message };
+
+  const rows = lines
+    .filter((l) => l.qtyPerUnit > 0)
+    .map((l) => ({
+      menu_item_id: menuItemId,
+      packaging_item_id: l.packagingItemId,
+      qty_per_unit: l.qtyPerUnit,
+    }));
+
+  if (rows.length > 0) {
+    const { error: insertError } = await supabase
+      .from("packaging_recipes")
+      .insert(rows);
+    if (insertError) return { ok: false, error: insertError.message };
+  }
+
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
+  return { ok: true };
+}
+
 export async function deletePackagingItem(id: string) {
   await requireAdmin();
   const supabase = await createClient();

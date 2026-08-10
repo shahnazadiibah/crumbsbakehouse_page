@@ -148,6 +148,37 @@ export interface Database {
         >;
         Relationships: [];
       };
+      packaging_recipes: {
+        Row: {
+          id: string;
+          menu_item_id: string;
+          packaging_item_id: string;
+          qty_per_unit: number;
+        };
+        Insert: {
+          id?: string;
+          menu_item_id: string;
+          packaging_item_id: string;
+          qty_per_unit: number;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["packaging_recipes"]["Insert"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "packaging_recipes_menu_item_id_fkey";
+            columns: ["menu_item_id"];
+            referencedRelation: "menu_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "packaging_recipes_packaging_item_id_fkey";
+            columns: ["packaging_item_id"];
+            referencedRelation: "packaging_items";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       recipes: {
         Row: {
           id: string;

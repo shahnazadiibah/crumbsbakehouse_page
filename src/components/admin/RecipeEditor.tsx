@@ -1,33 +1,37 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { saveRecipe } from "@/app/actions/admin-inventory";
 
 interface MenuItem {
   id: string;
   name: string;
 }
 
-interface Ingredient {
+interface RecipeItem {
   id: string;
   name: string;
   unit: string;
 }
 
-interface Recipe {
+interface RecipeLine {
   menu_item_id: string;
-  ingredient_id: string;
+  item_id: string;
   qty_per_unit: number;
 }
 
 export default function RecipeEditor({
   menuItems,
-  ingredients,
-  recipes,
+  items,
+  recipeLines,
+  onSave,
 }: {
   menuItems: MenuItem[];
-  ingredients: Ingredient[];
-  recipes: Recipe[];
+  items: RecipeItem[];
+  recipeLines: RecipeLine[];
+  onSave: (
+    menuItemId: string,
+    lines: { itemId: string; qtyPerUnit: number }[]
+  ) => Promise<unknown>;
 }) {
   const [menuItemId, setMenuItemId] = useState(menuItems[0]?.id ?? "");
   const [isPending, startTransition] = useTransition();
@@ -35,19 +39,19 @@ export default function RecipeEditor({
 
   const initialQuantities = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const r of recipes) {
-      if (r.menu_item_id === menuItemId) map[r.ingredient_id] = r.qty_per_unit;
+    for (const r of recipeLines) {
+      if (r.menu_item_id === menuItemId) map[r.item_id] = r.qty_per_unit;
     }
     return map;
-  }, [recipes, menuItemId]);
+  }, [recipeLines, menuItemId]);
 
   const [quantities, setQuantities] = useState(initialQuantities);
 
   function selectMenuItem(id: string) {
     setMenuItemId(id);
     const map: Record<string, number> = {};
-    for (const r of recipes) {
-      if (r.menu_item_id === id) map[r.ingredient_id] = r.qty_per_unit;
+    for (const r of recipeLines) {
+      if (r.menu_item_id === id) map[r.item_id] = r.qty_per_unit;
     }
     setQuantities(map);
     setSaved(false);
@@ -76,27 +80,27 @@ export default function RecipeEditor({
       </select>
 
       <div className="divide-y divide-stone-100">
-        {ingredients.map((ing) => (
+        {items.map((item) => (
           <div
-            key={ing.id}
+            key={item.id}
             className="flex items-center justify-between gap-3 py-2"
           >
-            <span className="text-sm text-stone-700">{ing.name}</span>
+            <span className="text-sm text-stone-700">{item.name}</span>
             <div className="flex items-center gap-2">
               <input
                 type="number"
                 min={0}
                 step="any"
-                value={quantities[ing.id] ?? 0}
+                value={quantities[item.id] ?? 0}
                 onChange={(e) =>
                   setQuantities((prev) => ({
                     ...prev,
-                    [ing.id]: Number(e.target.value),
+                    [item.id]: Number(e.target.value),
                   }))
                 }
                 className="w-24 rounded-lg border border-stone-300 p-1.5 text-sm"
               />
-              <span className="w-10 text-xs text-stone-500">{ing.unit}</span>
+              <span className="w-10 text-xs text-stone-500">{item.unit}</span>
             </div>
           </div>
         ))}
@@ -107,9 +111,9 @@ export default function RecipeEditor({
         onClick={() =>
           startTransition(async () => {
             const lines = Object.entries(quantities).map(
-              ([ingredientId, qtyPerUnit]) => ({ ingredientId, qtyPerUnit })
+              ([itemId, qtyPerUnit]) => ({ itemId, qtyPerUnit })
             );
-            await saveRecipe(menuItemId, lines);
+            await onSave(menuItemId, lines);
             setSaved(true);
           })
         }
