@@ -1,7 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import RecipeEditor from "@/components/admin/RecipeEditor";
-import { saveRecipe } from "@/app/actions/admin-inventory";
-import { savePackagingRecipe } from "@/app/actions/admin-packaging";
+import { saveRecipe, updateIngredientCost } from "@/app/actions/admin-inventory";
+import {
+  savePackagingRecipe,
+  updatePackagingCost,
+} from "@/app/actions/admin-packaging";
 import { formatIDR } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -155,6 +158,10 @@ export default async function RecipesPage() {
               }))
             );
           }}
+          onSaveCost={async (itemId, costPerUnit) => {
+            "use server";
+            return updateIngredientCost(itemId, costPerUnit);
+          }}
         />
       </section>
 
@@ -183,6 +190,10 @@ export default async function RecipesPage() {
                 qtyPerUnit: l.qtyPerUnit,
               }))
             );
+          }}
+          onSaveCost={async (itemId, costPerUnit) => {
+            "use server";
+            return updatePackagingCost(itemId, costPerUnit);
           }}
         />
       </section>

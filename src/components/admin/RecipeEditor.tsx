@@ -11,6 +11,7 @@ interface RecipeItem {
   id: string;
   name: string;
   unit: string;
+  cost_per_unit: number;
 }
 
 interface RecipeLine {
@@ -24,6 +25,7 @@ export default function RecipeEditor({
   items,
   recipeLines,
   onSave,
+  onSaveCost,
 }: {
   menuItems: MenuItem[];
   items: RecipeItem[];
@@ -32,10 +34,15 @@ export default function RecipeEditor({
     menuItemId: string,
     lines: { itemId: string; qtyPerUnit: number }[]
   ) => Promise<unknown>;
+  onSaveCost: (itemId: string, costPerUnit: number) => Promise<unknown>;
 }) {
   const [menuItemId, setMenuItemId] = useState(menuItems[0]?.id ?? "");
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [costs, setCosts] = useState<Record<string, number>>(() =>
+    Object.fromEntries(items.map((i) => [i.id, i.cost_per_unit]))
+  );
+  const [costPending, setCostPending] = useState<string | null>(null);
 
   const initialQuantities = useMemo(() => {
     const map: Record<string, number> = {};
@@ -55,6 +62,12 @@ export default function RecipeEditor({
     }
     setQuantities(map);
     setSaved(false);
+  }
+
+  async function saveCost(itemId: string) {
+    setCostPending(itemId);
+    await onSaveCost(itemId, costs[itemId] ?? 0);
+    setCostPending(null);
   }
 
   if (menuItems.length === 0) {
@@ -101,6 +114,23 @@ export default function RecipeEditor({
                 className="w-24 rounded-lg border border-stone-300 p-1.5 text-sm"
               />
               <span className="w-10 text-xs text-stone-500">{item.unit}</span>
+              <span className="text-xs text-stone-400">@</span>
+              <input
+                type="number"
+                min={0}
+                step="any"
+                value={costs[item.id] ?? 0}
+                onChange={(e) =>
+                  setCosts((prev) => ({
+                    ...prev,
+                    [item.id]: Number(e.target.value),
+                  }))
+                }
+                onBlur={() => saveCost(item.id)}
+                disabled={costPending === item.id}
+                title="Cost per unit"
+                className="w-24 rounded-lg border border-stone-300 p-1.5 text-sm text-stone-600"
+              />
             </div>
           </div>
         ))}

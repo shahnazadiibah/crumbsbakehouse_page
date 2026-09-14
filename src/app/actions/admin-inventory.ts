@@ -51,6 +51,21 @@ export async function updateIngredient(id: string, input: IngredientInput) {
   return { ok: true };
 }
 
+export async function updateIngredientCost(id: string, costPerUnit: number) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("ingredients")
+    .update({ cost_per_unit: costPerUnit })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
+  return { ok: true };
+}
+
 export async function deleteIngredient(id: string) {
   await requireAdmin();
   const supabase = await createClient();
