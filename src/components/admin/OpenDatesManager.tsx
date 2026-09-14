@@ -62,16 +62,16 @@ export default function OpenDatesManager({ dates }: { dates: string[] }) {
   }
 
   return (
-    <div className="w-fit space-y-4 rounded-xl border border-stone-200 bg-white p-4">
+    <div className="w-fit space-y-3 rounded-xl border border-stone-200 bg-white p-3">
       <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => goToMonth(-1)}
-          className="rounded-lg border border-stone-300 px-3 py-1 text-sm text-stone-600 hover:bg-stone-100"
+          className="rounded-md border border-stone-300 px-[9px] py-[3px] text-[10.5px] text-stone-600 hover:bg-stone-100"
         >
           ‹
         </button>
-        <p className="text-base font-semibold text-stone-900">
+        <p className="text-xs font-semibold text-stone-900">
           {firstOfMonth.toLocaleDateString("en-GB", {
             month: "long",
             year: "numeric",
@@ -80,15 +80,15 @@ export default function OpenDatesManager({ dates }: { dates: string[] }) {
         <button
           type="button"
           onClick={() => goToMonth(1)}
-          className="rounded-lg border border-stone-300 px-3 py-1 text-sm text-stone-600 hover:bg-stone-100"
+          className="rounded-md border border-stone-300 px-[9px] py-[3px] text-[10.5px] text-stone-600 hover:bg-stone-100"
         >
           ›
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-sm">
+      <div className="grid grid-cols-7 gap-[3px] text-center text-[10.5px]">
         {WEEKDAY_LABELS.map((w) => (
-          <div key={w} className="py-1 font-semibold text-stone-400">
+          <div key={w} className="py-[3px] font-semibold text-stone-400">
             {w[0]}
           </div>
         ))}
@@ -101,11 +101,11 @@ export default function OpenDatesManager({ dates }: { dates: string[] }) {
               type="button"
               disabled={isPending}
               onClick={() => toggle(date)}
-              className={`h-10 w-16 rounded-lg text-sm transition-colors disabled:opacity-50 ${
+              className={`h-[30px] w-12 rounded-md text-[10.5px] transition-colors disabled:opacity-50 ${
                 openDates.has(date)
                   ? "bg-brand-olive font-semibold text-white hover:bg-brand-olive-dark"
                   : "text-stone-700 hover:bg-stone-100"
-              } ${date === todayStr ? "ring-2 ring-brand-olive/50" : ""} ${
+              } ${date === todayStr ? "ring-[1.5px] ring-brand-olive/50" : ""} ${
                 pendingDate === date ? "animate-pulse" : ""
               }`}
             >
@@ -115,11 +115,11 @@ export default function OpenDatesManager({ dates }: { dates: string[] }) {
         )}
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-stone-500">
-        <span className="inline-block h-4 w-4 rounded bg-brand-olive" />
+      <div className="flex items-center gap-[6px] text-[10.5px] text-stone-500">
+        <span className="inline-block h-3 w-3 rounded bg-brand-olive" />
         Click a date to open/close it
       </div>
-      {error && <p className="text-sm text-red-700">{error}</p>}
+      {error && <p className="text-[10.5px] text-red-700">{error}</p>}
     </div>
   );
 }
