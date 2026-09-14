@@ -36,9 +36,8 @@ export default function PackagingManager({
           <thead className="border-b border-stone-200 bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-500">
             <tr>
               <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Unit</th>
-              <th className="px-4 py-3">Cost/unit</th>
               <th className="px-4 py-3">Stock</th>
+              <th className="px-4 py-3">Unit</th>
               <th className="px-4 py-3">Needed for batch</th>
               <th className="px-4 py-3">To buy</th>
               <th className="px-4 py-3"></th>
@@ -58,12 +57,6 @@ export default function PackagingManager({
                       className={inputClass}
                     />
                   </td>
-                  <td className="px-4 py-2 align-top text-stone-600">
-                    {item.unit || "—"}
-                  </td>
-                  <td className="px-4 py-2 align-top text-stone-600">
-                    {item.cost_per_unit}
-                  </td>
                   <td className="px-4 py-2 align-top">
                     <input
                       type="number"
@@ -71,6 +64,9 @@ export default function PackagingManager({
                       onChange={(e) => setEditStock(Number(e.target.value))}
                       className={inputClass}
                     />
+                  </td>
+                  <td className="px-4 py-2 align-top text-stone-600">
+                    {item.unit || "—"}
                   </td>
                   <td className="px-4 py-2 align-top text-stone-400">—</td>
                   <td className="px-4 py-2 align-top text-stone-400">—</td>
@@ -105,13 +101,10 @@ export default function PackagingManager({
                   <td className="px-4 py-3 font-medium text-stone-900">
                     {item.name}
                   </td>
+                  <td className="px-4 py-3 text-stone-600">{item.stock}</td>
                   <td className="px-4 py-3 text-stone-600">
                     {item.unit || "—"}
                   </td>
-                  <td className="px-4 py-3 text-stone-600">
-                    {item.cost_per_unit}
-                  </td>
-                  <td className="px-4 py-3 text-stone-600">{item.stock}</td>
                   <td className="px-4 py-3 text-stone-600">
                     {Number(needed.toFixed(2))}
                   </td>

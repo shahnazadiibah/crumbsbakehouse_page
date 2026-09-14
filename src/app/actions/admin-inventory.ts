@@ -86,6 +86,40 @@ export async function updateIngredientName(id: string, name: string) {
   return { ok: true };
 }
 
+export async function updateIngredientUnit(id: string, unit: string) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("ingredients")
+    .update({ unit: unit.trim() })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
+  revalidatePath("/admin/bake-list");
+  return { ok: true };
+}
+
+export async function updateIngredientBrand(
+  id: string,
+  brandSupplier: string
+) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("ingredients")
+    .update({ brand_supplier: brandSupplier.trim() || null })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
+  return { ok: true };
+}
+
 export async function deleteIngredient(id: string) {
   await requireAdmin();
   const supabase = await createClient();

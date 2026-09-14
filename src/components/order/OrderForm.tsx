@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { submitOrder } from "@/app/actions/orders";
 import { formatIDR } from "@/lib/format";
+import DatePickerCalendar from "@/components/order/DatePickerCalendar";
 import {
   isMandatoryWholeCakeZone,
   isSameDayBikeZone,
@@ -503,7 +504,7 @@ export default function OrderForm({
 
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
-          4. Delivery date (Batch)
+          4. Delivery date
         </h2>
         {batchDates.length === 0 ? (
           <p className="text-sm text-stone-500">
@@ -512,17 +513,11 @@ export default function OrderForm({
           </p>
         ) : (
           <>
-            <select
+            <DatePickerCalendar
+              options={batchDates}
               value={batchDate}
-              onChange={(e) => setBatchDate(e.target.value)}
-              className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
-            >
-              {batchDates.map((b) => (
-                <option key={b.date} value={b.date}>
-                  {b.label}
-                </option>
-              ))}
-            </select>
+              onChange={setBatchDate}
+            />
             <p className="mt-2 text-xs text-stone-500">
               Orders will be delivered between 8:00 - 9:00 AM
             </p>

@@ -49,10 +49,6 @@ function IngredientEditRow({
           className={inputClass}
         />
       </td>
-      <td className="px-4 py-2 align-top text-stone-600">{form.unit}</td>
-      <td className="px-4 py-2 align-top text-stone-600">
-        {form.costPerUnit}
-      </td>
       <td className="px-4 py-2 align-top">
         <input
           type="number"
@@ -63,6 +59,7 @@ function IngredientEditRow({
           className={inputClass}
         />
       </td>
+      <td className="px-4 py-2 align-top text-stone-600">{form.unit}</td>
       <td className="px-4 py-2 align-top text-stone-400">—</td>
       <td className="px-4 py-2 align-top text-stone-400">—</td>
       <td className="px-4 py-2 align-top text-right whitespace-nowrap">
@@ -102,9 +99,8 @@ export default function IngredientsManager({
           <thead className="border-b border-stone-200 bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-500">
             <tr>
               <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Unit</th>
-              <th className="px-4 py-3">Cost/unit</th>
               <th className="px-4 py-3">Stock</th>
+              <th className="px-4 py-3">Unit</th>
               <th className="px-4 py-3">Needed for batch</th>
               <th className="px-4 py-3">To buy</th>
               <th className="px-4 py-3"></th>
@@ -133,11 +129,8 @@ export default function IngredientsManager({
                   <td className="px-4 py-3 font-medium text-stone-900">
                     {ing.name}
                   </td>
-                  <td className="px-4 py-3 text-stone-600">{ing.unit}</td>
-                  <td className="px-4 py-3 text-stone-600">
-                    {ing.cost_per_unit}
-                  </td>
                   <td className="px-4 py-3 text-stone-600">{ing.stock}</td>
+                  <td className="px-4 py-3 text-stone-600">{ing.unit}</td>
                   <td className="px-4 py-3 text-stone-600">
                     {formatQty(needed)}
                   </td>

@@ -1,18 +1,23 @@
 import { createClient } from "@/lib/supabase/server";
 import RecipeEditor from "@/components/admin/RecipeEditor";
+import CogsTable from "@/components/admin/CogsTable";
 import {
   addIngredient,
   saveRecipe,
+  updateIngredientBrand,
   updateIngredientCost,
   updateIngredientName,
+  updateIngredientUnit,
 } from "@/app/actions/admin-inventory";
 import {
   addPackagingItem,
   savePackagingRecipe,
+  updatePackagingBrand,
   updatePackagingCost,
   updatePackagingName,
+  updatePackagingUnit,
 } from "@/app/actions/admin-packaging";
-import { formatIDR } from "@/lib/format";
+import { updateMenuItemPrice } from "@/app/actions/admin-menu-items";
 
 export const dynamic = "force-dynamic";
 
@@ -28,11 +33,11 @@ export default async function RecipesPage() {
   ] = await Promise.all([
     supabase
       .from("ingredients")
-      .select("id, name, unit, cost_per_unit, stock")
+      .select("id, name, unit, cost_per_unit, stock, brand_supplier")
       .order("name"),
     supabase
       .from("packaging_items")
-      .select("id, name, unit, cost_per_unit, stock")
+      .select("id, name, unit, cost_per_unit, stock, brand_supplier")
       .order("name"),
     supabase.from("menu_items").select("id, name, price").order("name"),
     supabase
@@ -74,8 +79,6 @@ export default async function RecipesPage() {
     const ingredientCost = ingredientCostByMenuItem.get(m.id) ?? 0;
     const packagingCost = packagingCostByMenuItem.get(m.id) ?? 0;
     const cogs = ingredientCost + packagingCost;
-    const margin = m.price - cogs;
-    const marginPct = m.price > 0 ? (margin / m.price) * 100 : 0;
     return {
       id: m.id,
       name: m.name,
@@ -83,8 +86,6 @@ export default async function RecipesPage() {
       ingredientCost,
       packagingCost,
       cogs,
-      margin,
-      marginPct,
     };
   });
 
@@ -96,49 +97,15 @@ export default async function RecipesPage() {
         </h1>
         <p className="text-sm text-stone-500">
           Computed from the ingredient and packaging recipes below (cost/unit
-          x qty/unit, summed).
+          x qty/unit, summed). Price is editable here.
         </p>
-        <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="border-b border-stone-200 bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-500">
-              <tr>
-                <th className="px-4 py-3">Menu item</th>
-                <th className="px-4 py-3">Price</th>
-                <th className="px-4 py-3">Ingredient cost</th>
-                <th className="px-4 py-3">Packaging cost</th>
-                <th className="px-4 py-3">COGS</th>
-                <th className="px-4 py-3">Margin</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100">
-              {cogsByMenuItem.map((m) => (
-                <tr key={m.id}>
-                  <td className="px-4 py-3 font-medium text-stone-900">
-                    {m.name}
-                  </td>
-                  <td className="px-4 py-3 text-stone-600">
-                    {formatIDR(m.price)}
-                  </td>
-                  <td className="px-4 py-3 text-stone-600">
-                    {formatIDR(m.ingredientCost)}
-                  </td>
-                  <td className="px-4 py-3 text-stone-600">
-                    {formatIDR(m.packagingCost)}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-stone-900">
-                    {formatIDR(m.cogs)}
-                  </td>
-                  <td className="px-4 py-3 text-stone-600">
-                    {formatIDR(m.margin)}{" "}
-                    <span className="text-xs text-stone-400">
-                      ({m.marginPct.toFixed(0)}%)
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <CogsTable
+          rows={cogsByMenuItem}
+          onSavePrice={async (menuItemId, price) => {
+            "use server";
+            return updateMenuItemPrice(menuItemId, price);
+          }}
+        />
       </section>
 
       <section className="space-y-3">
@@ -173,6 +140,14 @@ export default async function RecipesPage() {
           onSaveName={async (itemId, name) => {
             "use server";
             return updateIngredientName(itemId, name);
+          }}
+          onSaveUnit={async (itemId, unit) => {
+            "use server";
+            return updateIngredientUnit(itemId, unit);
+          }}
+          onSaveBrand={async (itemId, brandSupplier) => {
+            "use server";
+            return updateIngredientBrand(itemId, brandSupplier);
           }}
           onAddItem={async (name, unit, costPerUnit) => {
             "use server";
@@ -213,6 +188,14 @@ export default async function RecipesPage() {
           onSaveName={async (itemId, name) => {
             "use server";
             return updatePackagingName(itemId, name);
+          }}
+          onSaveUnit={async (itemId, unit) => {
+            "use server";
+            return updatePackagingUnit(itemId, unit);
+          }}
+          onSaveBrand={async (itemId, brandSupplier) => {
+            "use server";
+            return updatePackagingBrand(itemId, brandSupplier);
           }}
           onAddItem={async (name, unit, costPerUnit) => {
             "use server";

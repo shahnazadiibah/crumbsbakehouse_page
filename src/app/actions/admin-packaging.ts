@@ -99,6 +99,36 @@ export async function updatePackagingName(id: string, name: string) {
   return { ok: true };
 }
 
+export async function updatePackagingUnit(id: string, unit: string) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("packaging_items")
+    .update({ unit: unit.trim() })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
+  return { ok: true };
+}
+
+export async function updatePackagingBrand(id: string, brandSupplier: string) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("packaging_items")
+    .update({ brand_supplier: brandSupplier.trim() || null })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
+  return { ok: true };
+}
+
 export async function savePackagingRecipe(
   menuItemId: string,
   lines: { packagingItemId: string; qtyPerUnit: number }[]

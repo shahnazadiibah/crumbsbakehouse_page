@@ -13,6 +13,7 @@ interface RecipeItem {
   name: string;
   unit: string;
   cost_per_unit: number;
+  brand_supplier: string | null;
 }
 
 interface RecipeLine {
@@ -20,6 +21,9 @@ interface RecipeLine {
   item_id: string;
   qty_per_unit: number;
 }
+
+const cellInputClass =
+  "w-full rounded-lg border border-transparent p-1 text-sm text-stone-700 hover:border-stone-300 focus:border-stone-300";
 
 export default function RecipeEditor({
   menuItems,
@@ -29,6 +33,8 @@ export default function RecipeEditor({
   onSave,
   onSaveCost,
   onSaveName,
+  onSaveUnit,
+  onSaveBrand,
   onAddItem,
 }: {
   menuItems: MenuItem[];
@@ -41,24 +47,32 @@ export default function RecipeEditor({
   ) => Promise<unknown>;
   onSaveCost: (itemId: string, costPerUnit: number) => Promise<unknown>;
   onSaveName: (itemId: string, name: string) => Promise<unknown>;
+  onSaveUnit: (itemId: string, unit: string) => Promise<unknown>;
+  onSaveBrand: (itemId: string, brandSupplier: string) => Promise<unknown>;
   onAddItem: (name: string, unit: string, costPerUnit: number) => Promise<unknown>;
 }) {
   const [menuItemId, setMenuItemId] = useState(menuItems[0]?.id ?? "");
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+
   const [costs, setCosts] = useState<Record<string, number>>(() =>
     Object.fromEntries(items.map((i) => [i.id, i.cost_per_unit]))
   );
   const [names, setNames] = useState<Record<string, string>>(() =>
     Object.fromEntries(items.map((i) => [i.id, i.name]))
   );
-  const [costPending, setCostPending] = useState<string | null>(null);
-  const [namePending, setNamePending] = useState<string | null>(null);
+  const [units, setUnits] = useState<Record<string, string>>(() =>
+    Object.fromEntries(items.map((i) => [i.id, i.unit]))
+  );
+  const [brands, setBrands] = useState<Record<string, string>>(() =>
+    Object.fromEntries(items.map((i) => [i.id, i.brand_supplier ?? ""]))
+  );
+  const [fieldPending, setFieldPending] = useState<string | null>(null);
   const [newItem, setNewItem] = useState({ name: "", unit: "", cost: 0 });
   const [addPending, setAddPending] = useState(false);
 
   // Re-sync local edit state during render whenever the server gives us
-  // fresh items (e.g. after adding a new one, or a name/cost edit
+  // fresh items (e.g. after adding a new one, or a field edit
   // revalidating) — adjusting state while rendering, per React's
   // recommended pattern, rather than in an effect.
   const [prevItems, setPrevItems] = useState(items);
@@ -66,6 +80,10 @@ export default function RecipeEditor({
     setPrevItems(items);
     setCosts(Object.fromEntries(items.map((i) => [i.id, i.cost_per_unit])));
     setNames(Object.fromEntries(items.map((i) => [i.id, i.name])));
+    setUnits(Object.fromEntries(items.map((i) => [i.id, i.unit])));
+    setBrands(
+      Object.fromEntries(items.map((i) => [i.id, i.brand_supplier ?? ""]))
+    );
   }
 
   const initialQuantities = useMemo(() => {
@@ -88,21 +106,13 @@ export default function RecipeEditor({
     setSaved(false);
   }
 
-  async function saveCost(itemId: string) {
-    setCostPending(itemId);
-    await onSaveCost(itemId, costs[itemId] ?? 0);
-    setCostPending(null);
-  }
-
-  async function saveName(itemId: string) {
-    const name = (names[itemId] ?? "").trim();
-    if (!name) {
-      setNames((prev) => ({ ...prev, [itemId]: prev[itemId] }));
-      return;
-    }
-    setNamePending(itemId);
-    await onSaveName(itemId, name);
-    setNamePending(null);
+  async function saveField(
+    key: string,
+    action: () => Promise<unknown>
+  ) {
+    setFieldPending(key);
+    await action();
+    setFieldPending(null);
   }
 
   const totalCost = items.reduce(
@@ -132,82 +142,125 @@ export default function RecipeEditor({
         ))}
       </select>
 
-      <div className="flex items-center justify-between gap-3 px-0.5 text-xs font-semibold uppercase tracking-wide text-stone-500">
-        <span>Item</span>
-        <div className="flex items-center gap-2">
-          <span className="w-24">Qty/unit</span>
-          <span className="w-10"></span>
-          <span className="w-4"></span>
-          <span className="w-28 text-right">COST (Rp)</span>
-        </div>
-      </div>
-
-      <div className="divide-y divide-stone-100">
-        {items.map((item) => {
-          const lineCost =
-            (quantities[item.id] ?? 0) * (costs[item.id] ?? 0);
-          return (
-            <div
-              key={item.id}
-              className="flex items-center justify-between gap-3 py-2"
-            >
-              <input
-                value={names[item.id] ?? ""}
-                onChange={(e) =>
-                  setNames((prev) => ({ ...prev, [item.id]: e.target.value }))
-                }
-                onBlur={() => saveName(item.id)}
-                disabled={namePending === item.id}
-                className="w-32 rounded-lg border border-transparent p-1 text-sm text-stone-700 hover:border-stone-300 focus:border-stone-300"
-              />
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={0}
-                  step="any"
-                  value={quantities[item.id] ?? 0}
-                  onChange={(e) =>
-                    setQuantities((prev) => ({
-                      ...prev,
-                      [item.id]: Number(e.target.value),
-                    }))
-                  }
-                  className="w-24 rounded-lg border border-stone-300 p-1.5 text-sm"
-                />
-                <span className="w-10 text-xs text-stone-500">
-                  {item.unit}
-                </span>
-                <span className="w-4 text-center text-xs text-stone-400">
-                  @
-                </span>
-                <div className="w-28">
-                  <input
-                    type="number"
-                    min={0}
-                    step="any"
-                    value={costs[item.id] ?? 0}
-                    onChange={(e) =>
-                      setCosts((prev) => ({
-                        ...prev,
-                        [item.id]: Number(e.target.value),
-                      }))
-                    }
-                    onBlur={() => saveCost(item.id)}
-                    disabled={costPending === item.id}
-                    title="Cost per unit (editable)"
-                    className="w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-600"
-                  />
-                  {lineCost > 0 && (
-                    <div className="mt-0.5 flex justify-between text-[11px] text-stone-400">
-                      <span>Rp</span>
-                      <span>{formatDecimal(lineCost)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+              <th className="px-1 py-2 text-left">Item</th>
+              <th className="px-1 py-2 text-left">Brand/Supplier</th>
+              <th className="px-1 py-2 text-left">Cost/unit</th>
+              <th className="px-1 py-2 text-left">Unit</th>
+              <th className="border-l border-stone-200 px-1 py-2 text-left">
+                Qty/Unit
+              </th>
+              <th className="px-1 py-2 text-right">Cost</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stone-100">
+            {items.map((item) => {
+              const lineCost =
+                (quantities[item.id] ?? 0) * (costs[item.id] ?? 0);
+              return (
+                <tr key={item.id}>
+                  <td className="px-1 py-1">
+                    <input
+                      value={names[item.id] ?? ""}
+                      onChange={(e) =>
+                        setNames((prev) => ({
+                          ...prev,
+                          [item.id]: e.target.value,
+                        }))
+                      }
+                      onBlur={() =>
+                        saveField(`name-${item.id}`, () =>
+                          onSaveName(item.id, names[item.id] ?? "")
+                        )
+                      }
+                      disabled={fieldPending === `name-${item.id}`}
+                      className={`${cellInputClass} w-32`}
+                    />
+                  </td>
+                  <td className="px-1 py-1">
+                    <input
+                      value={brands[item.id] ?? ""}
+                      placeholder="—"
+                      onChange={(e) =>
+                        setBrands((prev) => ({
+                          ...prev,
+                          [item.id]: e.target.value,
+                        }))
+                      }
+                      onBlur={() =>
+                        saveField(`brand-${item.id}`, () =>
+                          onSaveBrand(item.id, brands[item.id] ?? "")
+                        )
+                      }
+                      disabled={fieldPending === `brand-${item.id}`}
+                      className={`${cellInputClass} w-28`}
+                    />
+                  </td>
+                  <td className="px-1 py-1">
+                    <input
+                      type="number"
+                      min={0}
+                      step="any"
+                      value={costs[item.id] ?? 0}
+                      onChange={(e) =>
+                        setCosts((prev) => ({
+                          ...prev,
+                          [item.id]: Number(e.target.value),
+                        }))
+                      }
+                      onBlur={() =>
+                        saveField(`cost-${item.id}`, () =>
+                          onSaveCost(item.id, costs[item.id] ?? 0)
+                        )
+                      }
+                      disabled={fieldPending === `cost-${item.id}`}
+                      className={`${cellInputClass} w-24`}
+                    />
+                  </td>
+                  <td className="px-1 py-1">
+                    <input
+                      value={units[item.id] ?? ""}
+                      onChange={(e) =>
+                        setUnits((prev) => ({
+                          ...prev,
+                          [item.id]: e.target.value,
+                        }))
+                      }
+                      onBlur={() =>
+                        saveField(`unit-${item.id}`, () =>
+                          onSaveUnit(item.id, units[item.id] ?? "")
+                        )
+                      }
+                      disabled={fieldPending === `unit-${item.id}`}
+                      className={`${cellInputClass} w-16`}
+                    />
+                  </td>
+                  <td className="border-l border-stone-200 px-1 py-1">
+                    <input
+                      type="number"
+                      min={0}
+                      step="any"
+                      value={quantities[item.id] ?? 0}
+                      onChange={(e) =>
+                        setQuantities((prev) => ({
+                          ...prev,
+                          [item.id]: Number(e.target.value),
+                        }))
+                      }
+                      className="w-20 rounded-lg border border-stone-300 p-1 text-sm"
+                    />
+                  </td>
+                  <td className="px-1 py-1 text-right text-stone-600">
+                    {lineCost > 0 ? `Rp ${formatDecimal(lineCost)}` : "—"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
       <div className="flex items-center justify-end gap-2 border-t border-stone-200 pt-2 text-sm">
