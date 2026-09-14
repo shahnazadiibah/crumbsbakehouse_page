@@ -14,6 +14,7 @@ interface RecipeItem {
   unit: string;
   cost_per_unit: number;
   brand_supplier: string | null;
+  remark: string | null;
 }
 
 interface RecipeLine {
@@ -25,6 +26,11 @@ interface RecipeLine {
 const cellInputClass =
   "w-full rounded-lg border border-transparent p-1 text-sm text-stone-700 hover:border-stone-300 focus:border-stone-300";
 
+// Hides the browser's up/down spin buttons on number inputs — this
+// field should only be edited by typing, not clicking.
+const noSpinnerClass =
+  "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+
 export default function RecipeEditor({
   menuItems,
   items,
@@ -35,6 +41,7 @@ export default function RecipeEditor({
   onSaveName,
   onSaveUnit,
   onSaveBrand,
+  onSaveRemark,
   onAddItem,
 }: {
   menuItems: MenuItem[];
@@ -49,6 +56,7 @@ export default function RecipeEditor({
   onSaveName: (itemId: string, name: string) => Promise<unknown>;
   onSaveUnit: (itemId: string, unit: string) => Promise<unknown>;
   onSaveBrand: (itemId: string, brandSupplier: string) => Promise<unknown>;
+  onSaveRemark: (itemId: string, remark: string) => Promise<unknown>;
   onAddItem: (name: string, unit: string, costPerUnit: number) => Promise<unknown>;
 }) {
   const [menuItemId, setMenuItemId] = useState(menuItems[0]?.id ?? "");
@@ -67,6 +75,9 @@ export default function RecipeEditor({
   const [brands, setBrands] = useState<Record<string, string>>(() =>
     Object.fromEntries(items.map((i) => [i.id, i.brand_supplier ?? ""]))
   );
+  const [remarks, setRemarks] = useState<Record<string, string>>(() =>
+    Object.fromEntries(items.map((i) => [i.id, i.remark ?? ""]))
+  );
   const [fieldPending, setFieldPending] = useState<string | null>(null);
   const [newItem, setNewItem] = useState({ name: "", unit: "", cost: 0 });
   const [addPending, setAddPending] = useState(false);
@@ -84,6 +95,7 @@ export default function RecipeEditor({
     setBrands(
       Object.fromEntries(items.map((i) => [i.id, i.brand_supplier ?? ""]))
     );
+    setRemarks(Object.fromEntries(items.map((i) => [i.id, i.remark ?? ""])));
   }
 
   const initialQuantities = useMemo(() => {
@@ -148,6 +160,7 @@ export default function RecipeEditor({
             <tr className="text-xs font-semibold uppercase tracking-wide text-stone-500">
               <th className="px-1 py-2 text-left">Item</th>
               <th className="px-1 py-2 text-left">Brand/Supplier</th>
+              <th className="px-1 py-2 text-left">Remark</th>
               <th className="px-1 py-2 text-left">Cost/unit</th>
               <th className="px-1 py-2 text-left">Unit</th>
               <th className="border-l border-stone-200 px-1 py-2 text-left">
@@ -201,6 +214,25 @@ export default function RecipeEditor({
                   </td>
                   <td className="px-1 py-1">
                     <input
+                      value={remarks[item.id] ?? ""}
+                      placeholder="—"
+                      onChange={(e) =>
+                        setRemarks((prev) => ({
+                          ...prev,
+                          [item.id]: e.target.value,
+                        }))
+                      }
+                      onBlur={() =>
+                        saveField(`remark-${item.id}`, () =>
+                          onSaveRemark(item.id, remarks[item.id] ?? "")
+                        )
+                      }
+                      disabled={fieldPending === `remark-${item.id}`}
+                      className={`${cellInputClass} w-28`}
+                    />
+                  </td>
+                  <td className="px-1 py-1">
+                    <input
                       type="number"
                       min={0}
                       step="any"
@@ -217,7 +249,7 @@ export default function RecipeEditor({
                         )
                       }
                       disabled={fieldPending === `cost-${item.id}`}
-                      className={`${cellInputClass} w-24`}
+                      className={`${cellInputClass} ${noSpinnerClass} w-24`}
                     />
                   </td>
                   <td className="px-1 py-1">

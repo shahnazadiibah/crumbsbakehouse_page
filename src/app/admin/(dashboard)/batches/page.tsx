@@ -119,6 +119,17 @@ export default async function BatchesPage() {
     return { revenue, ingredientCost, packagingCost, menuBreakdown, totalQty };
   }
 
+  const historyTotals = (closedBatches ?? []).reduce(
+    (acc, b) => ({
+      revenue: acc.revenue + b.revenue,
+      ingredientCost: acc.ingredientCost + b.ingredient_cost,
+      packagingCost: acc.packagingCost + b.packaging_cost,
+      otherCosts: acc.otherCosts + b.other_costs,
+      profit: acc.profit + b.profit,
+    }),
+    { revenue: 0, ingredientCost: 0, packagingCost: 0, otherCosts: 0, profit: 0 }
+  );
+
   return (
     <div className="space-y-8">
       <section className="space-y-3">
@@ -197,6 +208,26 @@ export default async function BatchesPage() {
                   </tr>
                 ))}
               </tbody>
+              <tfoot className="border-t-2 border-stone-300 bg-stone-50 font-semibold text-stone-900">
+                <tr>
+                  <td className="px-4 py-3">Total</td>
+                  <td className="px-4 py-3">
+                    {formatIDR(historyTotals.revenue)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {formatIDR(historyTotals.ingredientCost)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {formatIDR(historyTotals.packagingCost)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {formatIDR(historyTotals.otherCosts)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {formatIDR(historyTotals.profit)}
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}

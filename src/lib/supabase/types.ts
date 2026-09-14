@@ -111,6 +111,7 @@ export interface Database {
           stock: number;
           reorder_threshold: number;
           brand_supplier: string | null;
+          remark: string | null;
           created_at: string;
         };
         Insert: {
@@ -121,6 +122,7 @@ export interface Database {
           stock?: number;
           reorder_threshold?: number;
           brand_supplier?: string | null;
+          remark?: string | null;
           created_at?: string;
         };
         Update: Partial<
@@ -150,6 +152,7 @@ export interface Database {
           cost_per_unit: number;
           stock: number;
           brand_supplier: string | null;
+          remark: string | null;
           created_at: string;
         };
         Insert: {
@@ -159,6 +162,7 @@ export interface Database {
           cost_per_unit?: number;
           stock?: number;
           brand_supplier?: string | null;
+          remark?: string | null;
           created_at?: string;
         };
         Update: Partial<

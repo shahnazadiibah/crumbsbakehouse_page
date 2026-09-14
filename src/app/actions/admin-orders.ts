@@ -63,6 +63,23 @@ export async function updateOrderItems(
   return { ok: true };
 }
 
+export async function updateOrderNotes(orderId: string, notes: string) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("orders")
+    .update({ notes: notes.trim() || null })
+    .eq("id", orderId);
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
 export async function deleteOrder(orderId: string) {
   await requireAdmin();
   const supabase = await createClient();

@@ -7,6 +7,7 @@ import {
   updateIngredientBrand,
   updateIngredientCost,
   updateIngredientName,
+  updateIngredientRemark,
   updateIngredientUnit,
 } from "@/app/actions/admin-inventory";
 import {
@@ -15,6 +16,7 @@ import {
   updatePackagingBrand,
   updatePackagingCost,
   updatePackagingName,
+  updatePackagingRemark,
   updatePackagingUnit,
 } from "@/app/actions/admin-packaging";
 import { updateMenuItemPrice } from "@/app/actions/admin-menu-items";
@@ -33,11 +35,11 @@ export default async function RecipesPage() {
   ] = await Promise.all([
     supabase
       .from("ingredients")
-      .select("id, name, unit, cost_per_unit, stock, brand_supplier")
+      .select("id, name, unit, cost_per_unit, stock, brand_supplier, remark")
       .order("name"),
     supabase
       .from("packaging_items")
-      .select("id, name, unit, cost_per_unit, stock, brand_supplier")
+      .select("id, name, unit, cost_per_unit, stock, brand_supplier, remark")
       .order("name"),
     supabase.from("menu_items").select("id, name, price").order("name"),
     supabase
@@ -149,6 +151,10 @@ export default async function RecipesPage() {
             "use server";
             return updateIngredientBrand(itemId, brandSupplier);
           }}
+          onSaveRemark={async (itemId, remark) => {
+            "use server";
+            return updateIngredientRemark(itemId, remark);
+          }}
           onAddItem={async (name, unit, costPerUnit) => {
             "use server";
             return addIngredient({ name, unit, costPerUnit, stock: 0 });
@@ -196,6 +202,10 @@ export default async function RecipesPage() {
           onSaveBrand={async (itemId, brandSupplier) => {
             "use server";
             return updatePackagingBrand(itemId, brandSupplier);
+          }}
+          onSaveRemark={async (itemId, remark) => {
+            "use server";
+            return updatePackagingRemark(itemId, remark);
           }}
           onAddItem={async (name, unit, costPerUnit) => {
             "use server";

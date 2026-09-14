@@ -6,6 +6,7 @@ import {
   setOrderPaid,
   setOrderStatus,
   updateOrderItems,
+  updateOrderNotes,
 } from "@/app/actions/admin-orders";
 import { downloadCsv } from "@/lib/csv";
 import { formatIDR } from "@/lib/format";
@@ -89,6 +90,7 @@ export default function OrdersTable({
   const [isPending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editItems, setEditItems] = useState<OrderItem[]>([]);
+  const [editNotes, setEditNotes] = useState("");
   const [addItemId, setAddItemId] = useState(menuItems[0]?.id ?? "");
 
   if (orders.length === 0) {
@@ -311,8 +313,20 @@ export default function OrdersTable({
                       Card: &quot;{order.greeting_card}&quot;
                     </p>
                   )}
-                  {order.notes && <p>{order.notes}</p>}
-                  {!order.greeting_card && !order.notes && "—"}
+                  {editingId === order.id ? (
+                    <textarea
+                      value={editNotes}
+                      onChange={(e) => setEditNotes(e.target.value)}
+                      placeholder="Notes"
+                      rows={2}
+                      className="mt-1 w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900"
+                    />
+                  ) : (
+                    <>
+                      {order.notes && <p>{order.notes}</p>}
+                      {!order.greeting_card && !order.notes && "—"}
+                    </>
+                  )}
                 </td>
                 <td className="px-4 py-3 align-top whitespace-nowrap">
                   {editingId === order.id ? (
@@ -321,11 +335,14 @@ export default function OrdersTable({
                         disabled={isPending}
                         onClick={() =>
                           startTransition(async () => {
-                            await updateOrderItems(
-                              order.id,
-                              editItems,
-                              order.delivery_fee
-                            );
+                            await Promise.all([
+                              updateOrderItems(
+                                order.id,
+                                editItems,
+                                order.delivery_fee
+                              ),
+                              updateOrderNotes(order.id, editNotes),
+                            ]);
                             setEditingId(null);
                           })
                         }
@@ -347,6 +364,7 @@ export default function OrdersTable({
                         onClick={() => {
                           setEditingId(order.id);
                           setEditItems(order.items);
+                          setEditNotes(order.notes ?? "");
                         }}
                         className="mr-3 font-medium text-stone-700 hover:underline"
                       >

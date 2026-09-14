@@ -67,7 +67,19 @@ export default function DatePickerCalendar({
         className="flex w-full items-center justify-between rounded-lg border border-stone-300 p-3 text-sm text-stone-900"
       >
         <span>{value ? optionByDate.get(value) ?? value : "Select a date"}</span>
-        <span className="text-stone-400">📅</span>
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          className={`h-4 w-4 shrink-0 text-stone-400 transition-transform ${open ? "rotate-180" : ""}`}
+        >
+          <path
+            d="M5 7.5L10 12.5L15 7.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </button>
 
       {open && (

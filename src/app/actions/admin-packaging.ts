@@ -129,6 +129,21 @@ export async function updatePackagingBrand(id: string, brandSupplier: string) {
   return { ok: true };
 }
 
+export async function updatePackagingRemark(id: string, remark: string) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("packaging_items")
+    .update({ remark: remark.trim() || null })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
+  return { ok: true };
+}
+
 export async function savePackagingRecipe(
   menuItemId: string,
   lines: { packagingItemId: string; qtyPerUnit: number }[]

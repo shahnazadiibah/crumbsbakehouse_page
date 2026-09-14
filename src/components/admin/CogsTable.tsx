@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { formatIDR, formatNumberComma } from "@/lib/format";
+import { formatIDR } from "@/lib/format";
 
 interface CogsRow {
   id: string;
@@ -63,24 +63,26 @@ export default function CogsTable({
                   {m.name}
                 </td>
                 <td className="px-4 py-3">
-                  <input
-                    type="number"
-                    min={0}
-                    step="any"
-                    value={price}
-                    onChange={(e) =>
-                      setPrices((prev) => ({
-                        ...prev,
-                        [m.id]: Number(e.target.value),
-                      }))
-                    }
-                    onBlur={() => savePrice(m.id)}
-                    disabled={isPending && pendingId === m.id}
-                    className="w-28 rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900"
-                  />
-                  <p className="mt-0.5 text-xs text-stone-400">
-                    {formatNumberComma(price)}
-                  </p>
+                  <div className="relative w-32">
+                    <span className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-sm text-stone-400">
+                      Rp
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      step="any"
+                      value={price}
+                      onChange={(e) =>
+                        setPrices((prev) => ({
+                          ...prev,
+                          [m.id]: Number(e.target.value),
+                        }))
+                      }
+                      onBlur={() => savePrice(m.id)}
+                      disabled={isPending && pendingId === m.id}
+                      className="w-full rounded-lg border border-stone-300 py-1.5 pl-8 pr-1.5 text-sm text-stone-900"
+                    />
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-stone-600">
                   {formatIDR(m.ingredientCost)}

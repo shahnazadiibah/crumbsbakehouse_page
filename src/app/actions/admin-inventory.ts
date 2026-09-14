@@ -120,6 +120,21 @@ export async function updateIngredientBrand(
   return { ok: true };
 }
 
+export async function updateIngredientRemark(id: string, remark: string) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("ingredients")
+    .update({ remark: remark.trim() || null })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
+  return { ok: true };
+}
+
 export async function deleteIngredient(id: string) {
   await requireAdmin();
   const supabase = await createClient();
