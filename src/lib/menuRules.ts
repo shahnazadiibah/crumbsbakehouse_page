@@ -34,5 +34,6 @@ export function getProductFamily(itemName: string): string {
   const name = itemName.toLowerCase();
   if (name.includes("banana bread")) return "Banana Bread";
   if (name.includes("carrot cake")) return "Carrot Cake";
+  if (name.includes("tres leches")) return "Tres Leches Cake";
   return itemName;
 }

@@ -22,6 +22,8 @@ export default async function BatchesPage() {
     { data: closedBatches },
     { data: recipes },
     { data: ingredients },
+    { data: packagingRecipes },
+    { data: packagingItems },
   ] = await Promise.all([
     supabase.from("orders").select("batch_date, paid, grand_total, items"),
     supabase
@@ -32,6 +34,10 @@ export default async function BatchesPage() {
       .from("recipes")
       .select("menu_item_id, ingredient_id, qty_per_unit"),
     supabase.from("ingredients").select("id, cost_per_unit"),
+    supabase
+      .from("packaging_recipes")
+      .select("menu_item_id, packaging_item_id, qty_per_unit"),
+    supabase.from("packaging_items").select("id, cost_per_unit"),
   ]);
 
   const closedDates = new Set((closedBatches ?? []).map((b) => b.batch_date));
@@ -54,6 +60,22 @@ export default async function BatchesPage() {
     recipesByMenuItem.set(r.menu_item_id, list);
   }
 
+  const costByPackagingId = new Map(
+    (packagingItems ?? []).map((p) => [p.id, p.cost_per_unit])
+  );
+  const packagingRecipesByMenuItem = new Map<
+    string,
+    { packaging_item_id: string; qty_per_unit: number }[]
+  >();
+  for (const r of packagingRecipes ?? []) {
+    const list = packagingRecipesByMenuItem.get(r.menu_item_id) ?? [];
+    list.push({
+      packaging_item_id: r.packaging_item_id,
+      qty_per_unit: r.qty_per_unit,
+    });
+    packagingRecipesByMenuItem.set(r.menu_item_id, list);
+  }
+
   function previewFor(batchDate: string) {
     const batchOrders = (orders ?? []).filter(
       (o) => o.batch_date === batchDate
@@ -62,12 +84,20 @@ export default async function BatchesPage() {
     const revenue = paidOrders.reduce((sum, o) => sum + o.grand_total, 0);
 
     let ingredientCost = 0;
+    let packagingCost = 0;
     for (const order of batchOrders) {
       for (const item of order.items) {
         const lines = recipesByMenuItem.get(item.menu_item_id) ?? [];
         for (const line of lines) {
           const cost = costByIngredientId.get(line.ingredient_id) ?? 0;
           ingredientCost += line.qty_per_unit * item.qty * cost;
+        }
+
+        const packagingLines =
+          packagingRecipesByMenuItem.get(item.menu_item_id) ?? [];
+        for (const line of packagingLines) {
+          const cost = costByPackagingId.get(line.packaging_item_id) ?? 0;
+          packagingCost += line.qty_per_unit * item.qty * cost;
         }
       }
     }
@@ -86,7 +116,7 @@ export default async function BatchesPage() {
       .sort((a, b) => a.name.localeCompare(b.name));
     const totalQty = menuBreakdown.reduce((sum, m) => sum + m.qty, 0);
 
-    return { revenue, ingredientCost, menuBreakdown, totalQty };
+    return { revenue, ingredientCost, packagingCost, menuBreakdown, totalQty };
   }
 
   return (
@@ -100,7 +130,7 @@ export default async function BatchesPage() {
         ) : (
           <div className="space-y-4">
             {openDates.map((date) => {
-              const { revenue, ingredientCost, menuBreakdown, totalQty } =
+              const { revenue, ingredientCost, packagingCost, menuBreakdown, totalQty } =
                 previewFor(date);
               return (
                 <CloseBatchCard
@@ -109,6 +139,7 @@ export default async function BatchesPage() {
                   label={formatBatchLabel(date)}
                   revenuePreview={revenue}
                   ingredientCostPreview={ingredientCost}
+                  packagingCostPreview={packagingCost}
                   menuBreakdown={menuBreakdown}
                   totalQty={totalQty}
                 />
@@ -134,6 +165,7 @@ export default async function BatchesPage() {
                   <th className="px-4 py-3">Batch</th>
                   <th className="px-4 py-3">Revenue</th>
                   <th className="px-4 py-3">Ingredient cost</th>
+                  <th className="px-4 py-3">Packaging cost</th>
                   <th className="px-4 py-3">Other costs</th>
                   <th className="px-4 py-3">Profit</th>
                 </tr>
@@ -147,6 +179,9 @@ export default async function BatchesPage() {
                     <td className="px-4 py-3">{formatIDR(b.revenue)}</td>
                     <td className="px-4 py-3">
                       {formatIDR(b.ingredient_cost)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {formatIDR(b.packaging_cost)}
                     </td>
                     <td className="px-4 py-3">
                       {formatIDR(b.other_costs)}

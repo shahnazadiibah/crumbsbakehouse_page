@@ -15,6 +15,7 @@ interface CloseBatchCardProps {
   label: string;
   revenuePreview: number;
   ingredientCostPreview: number;
+  packagingCostPreview: number;
   menuBreakdown: MenuBreakdownLine[];
   totalQty: number;
 }
@@ -24,6 +25,7 @@ export default function CloseBatchCard({
   label,
   revenuePreview,
   ingredientCostPreview,
+  packagingCostPreview,
   menuBreakdown,
   totalQty,
 }: CloseBatchCardProps) {
@@ -32,7 +34,8 @@ export default function CloseBatchCard({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const profitPreview = revenuePreview - ingredientCostPreview - otherCosts;
+  const profitPreview =
+    revenuePreview - ingredientCostPreview - packagingCostPreview - otherCosts;
 
   function handleClose() {
     setError(null);
@@ -48,7 +51,7 @@ export default function CloseBatchCard({
     <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
       <h3 className="font-semibold text-stone-900">{label}</h3>
 
-      <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-5">
         <div>
           <p className="text-stone-500">Revenue (paid)</p>
           <p className="font-medium text-stone-900">
@@ -59,6 +62,12 @@ export default function CloseBatchCard({
           <p className="text-stone-500">Ingredient cost</p>
           <p className="font-medium text-stone-900">
             {formatIDR(ingredientCostPreview)}
+          </p>
+        </div>
+        <div>
+          <p className="text-stone-500">Packaging cost</p>
+          <p className="font-medium text-stone-900">
+            {formatIDR(packagingCostPreview)}
           </p>
         </div>
         <div>

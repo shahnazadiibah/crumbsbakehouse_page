@@ -214,6 +214,7 @@ export interface Database {
           batch_date: string;
           revenue: number;
           ingredient_cost: number;
+          packaging_cost: number;
           other_costs: number;
           other_costs_note: string | null;
           profit: number;
@@ -224,6 +225,7 @@ export interface Database {
           batch_date: string;
           revenue?: number;
           ingredient_cost?: number;
+          packaging_cost?: number;
           other_costs?: number;
           other_costs_note?: string | null;
           profit?: number;
