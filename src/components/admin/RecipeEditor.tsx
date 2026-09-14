@@ -164,7 +164,7 @@ export default function RecipeEditor({
               <th className="px-1 py-2 text-left">Cost/unit</th>
               <th className="px-1 py-2 text-left">Unit</th>
               <th className="border-l border-stone-200 px-1 py-2 text-left">
-                Qty/Unit
+                Qty/Portion
               </th>
               <th className="w-36 px-2 py-2 text-right">Cost</th>
             </tr>
@@ -232,25 +232,30 @@ export default function RecipeEditor({
                     />
                   </td>
                   <td className="px-1 py-1">
-                    <input
-                      type="number"
-                      min={0}
-                      step="any"
-                      value={costs[item.id] ?? 0}
-                      onChange={(e) =>
-                        setCosts((prev) => ({
-                          ...prev,
-                          [item.id]: Number(e.target.value),
-                        }))
-                      }
-                      onBlur={() =>
-                        saveField(`cost-${item.id}`, () =>
-                          onSaveCost(item.id, costs[item.id] ?? 0)
-                        )
-                      }
-                      disabled={fieldPending === `cost-${item.id}`}
-                      className={`${cellInputClass} ${noSpinnerClass} w-24`}
-                    />
+                    <div className="relative w-24">
+                      <span className="pointer-events-none absolute inset-y-0 left-1 flex items-center text-xs text-stone-400">
+                        Rp
+                      </span>
+                      <input
+                        type="number"
+                        min={0}
+                        step="any"
+                        value={costs[item.id] ?? 0}
+                        onChange={(e) =>
+                          setCosts((prev) => ({
+                            ...prev,
+                            [item.id]: Number(e.target.value),
+                          }))
+                        }
+                        onBlur={() =>
+                          saveField(`cost-${item.id}`, () =>
+                            onSaveCost(item.id, costs[item.id] ?? 0)
+                          )
+                        }
+                        disabled={fieldPending === `cost-${item.id}`}
+                        className={`${cellInputClass} ${noSpinnerClass} w-full pl-6`}
+                      />
+                    </div>
                   </td>
                   <td className="px-1 py-1">
                     <input
@@ -342,18 +347,23 @@ export default function RecipeEditor({
             }
             className="w-28 rounded-lg border border-stone-300 p-1.5 text-sm"
           />
-          <input
-            type="number"
-            placeholder="Cost/unit"
-            value={newItem.cost}
-            onChange={(e) =>
-              setNewItem((prev) => ({
-                ...prev,
-                cost: Number(e.target.value),
-              }))
-            }
-            className="w-28 rounded-lg border border-stone-300 p-1.5 text-sm"
-          />
+          <div className="relative w-28">
+            <span className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-sm text-stone-400">
+              Rp
+            </span>
+            <input
+              type="number"
+              placeholder="Cost/unit"
+              value={newItem.cost}
+              onChange={(e) =>
+                setNewItem((prev) => ({
+                  ...prev,
+                  cost: Number(e.target.value),
+                }))
+              }
+              className="w-full rounded-lg border border-stone-300 p-1.5 pl-8 text-sm"
+            />
+          </div>
           <button
             type="button"
             disabled={addPending || !newItem.name.trim()}
