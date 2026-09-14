@@ -81,6 +81,24 @@ export async function updatePackagingCost(id: string, costPerUnit: number) {
   return { ok: true };
 }
 
+export async function updatePackagingName(id: string, name: string) {
+  await requireAdmin();
+  if (!name.trim()) {
+    return { ok: false, error: "Name is required." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("packaging_items")
+    .update({ name: name.trim() })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
+  return { ok: true };
+}
+
 export async function savePackagingRecipe(
   menuItemId: string,
   lines: { packagingItemId: string; qtyPerUnit: number }[]

@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import {
-  addIngredient,
   deleteIngredient,
   updateIngredient,
   type IngredientInput,
@@ -16,75 +15,12 @@ interface Ingredient {
   stock: number;
 }
 
-const emptyForm: IngredientInput = {
-  name: "",
-  unit: "",
-  costPerUnit: 0,
-  stock: 0,
-};
-
 function formatQty(qty: number): number {
   return Number(qty.toFixed(2));
 }
 
 const inputClass =
   "w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900 placeholder:text-stone-500";
-
-function IngredientForm({
-  initial,
-  onSubmit,
-  submitLabel,
-}: {
-  initial: IngredientInput;
-  onSubmit: (input: IngredientInput) => void;
-  submitLabel: string;
-}) {
-  const [form, setForm] = useState(initial);
-
-  return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-      <input
-        placeholder="Name"
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-        className="col-span-2 rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500 sm:col-span-2"
-      />
-      <input
-        placeholder="Unit (g, pcs, ml…)"
-        value={form.unit}
-        onChange={(e) => setForm({ ...form, unit: e.target.value })}
-        className="rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
-      />
-      <input
-        type="number"
-        placeholder="Cost/unit"
-        value={form.costPerUnit}
-        onChange={(e) =>
-          setForm({ ...form, costPerUnit: Number(e.target.value) })
-        }
-        className="rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
-      />
-      <div className="flex gap-1">
-        <input
-          type="number"
-          placeholder="Stock"
-          value={form.stock}
-          onChange={(e) =>
-            setForm({ ...form, stock: Number(e.target.value) })
-          }
-          className="w-full rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
-        />
-        <button
-          type="button"
-          onClick={() => onSubmit(form)}
-          className="shrink-0 rounded-lg bg-brand-olive px-3 py-2 text-xs font-semibold text-white hover:bg-brand-olive-dark"
-        >
-          {submitLabel}
-        </button>
-      </div>
-    </div>
-  );
-}
 
 function IngredientEditRow({
   ingredient,
@@ -238,22 +174,6 @@ export default function IngredientsManager({
             })}
           </tbody>
         </table>
-      </div>
-
-      <div className="rounded-xl border border-dashed border-stone-300 bg-white p-4">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">
-          Add ingredient
-        </p>
-        <IngredientForm
-          key={ingredients.length}
-          initial={emptyForm}
-          submitLabel="Add"
-          onSubmit={(input) =>
-            startTransition(() => {
-              addIngredient(input);
-            })
-          }
-        />
       </div>
     </div>
   );

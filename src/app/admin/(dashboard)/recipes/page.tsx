@@ -1,9 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
 import RecipeEditor from "@/components/admin/RecipeEditor";
-import { saveRecipe, updateIngredientCost } from "@/app/actions/admin-inventory";
 import {
+  addIngredient,
+  saveRecipe,
+  updateIngredientCost,
+  updateIngredientName,
+} from "@/app/actions/admin-inventory";
+import {
+  addPackagingItem,
   savePackagingRecipe,
   updatePackagingCost,
+  updatePackagingName,
 } from "@/app/actions/admin-packaging";
 import { formatIDR } from "@/lib/format";
 
@@ -143,6 +150,7 @@ export default async function RecipesPage() {
         <RecipeEditor
           menuItems={menuItems ?? []}
           items={ingredients ?? []}
+          itemLabel="ingredient"
           recipeLines={(recipes ?? []).map((r) => ({
             menu_item_id: r.menu_item_id,
             item_id: r.ingredient_id,
@@ -162,13 +170,19 @@ export default async function RecipesPage() {
             "use server";
             return updateIngredientCost(itemId, costPerUnit);
           }}
+          onSaveName={async (itemId, name) => {
+            "use server";
+            return updateIngredientName(itemId, name);
+          }}
+          onAddItem={async (name, unit, costPerUnit) => {
+            "use server";
+            return addIngredient({ name, unit, costPerUnit, stock: 0 });
+          }}
         />
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold text-stone-900">
-          Packaging recipes
-        </h2>
+        <h2 className="text-xl font-semibold text-stone-900">Packaging</h2>
         <p className="text-sm text-stone-500">
           Define how much of each packaging item one unit of a menu item
           uses.
@@ -176,6 +190,7 @@ export default async function RecipesPage() {
         <RecipeEditor
           menuItems={menuItems ?? []}
           items={packagingItems ?? []}
+          itemLabel="packaging item"
           recipeLines={(packagingRecipes ?? []).map((r) => ({
             menu_item_id: r.menu_item_id,
             item_id: r.packaging_item_id,
@@ -194,6 +209,14 @@ export default async function RecipesPage() {
           onSaveCost={async (itemId, costPerUnit) => {
             "use server";
             return updatePackagingCost(itemId, costPerUnit);
+          }}
+          onSaveName={async (itemId, name) => {
+            "use server";
+            return updatePackagingName(itemId, name);
+          }}
+          onAddItem={async (name, unit, costPerUnit) => {
+            "use server";
+            return addPackagingItem({ name, unit, costPerUnit, stock: 0 });
           }}
         />
       </section>

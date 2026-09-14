@@ -6,7 +6,7 @@ const NAV_ITEMS = [
   { href: "/admin/bake-list", label: "Baking Guide" },
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/batches", label: "Batches" },
-  { href: "/admin/recipes", label: "Recipes" },
+  { href: "/admin/recipes", label: "COGS" },
 ];
 
 export default function DashboardLayout({

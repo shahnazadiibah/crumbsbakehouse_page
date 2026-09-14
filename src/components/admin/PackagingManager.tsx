@@ -2,10 +2,8 @@
 
 import { useState, useTransition } from "react";
 import {
-  addPackagingItem,
   deletePackagingItem,
   updatePackagingNameAndStock,
-  type PackagingInput,
 } from "@/app/actions/admin-packaging";
 
 interface PackagingItem {
@@ -15,13 +13,6 @@ interface PackagingItem {
   cost_per_unit: number;
   stock: number;
 }
-
-const emptyForm: PackagingInput = {
-  name: "",
-  unit: "",
-  costPerUnit: 0,
-  stock: 0,
-};
 
 const inputClass =
   "w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900 placeholder:text-stone-500";
@@ -37,7 +28,6 @@ export default function PackagingManager({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editStock, setEditStock] = useState(0);
-  const [form, setForm] = useState<PackagingInput>(emptyForm);
 
   return (
     <div className="space-y-3">
@@ -162,58 +152,6 @@ export default function PackagingManager({
             })}
           </tbody>
         </table>
-      </div>
-
-      <div className="rounded-xl border border-dashed border-stone-300 bg-white p-4">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">
-          Add packaging item
-        </p>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          <input
-            placeholder="Name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="col-span-2 rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500 sm:col-span-2"
-          />
-          <input
-            placeholder="Unit (pcs…)"
-            value={form.unit}
-            onChange={(e) => setForm({ ...form, unit: e.target.value })}
-            className="rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
-          />
-          <input
-            type="number"
-            placeholder="Cost/unit"
-            value={form.costPerUnit}
-            onChange={(e) =>
-              setForm({ ...form, costPerUnit: Number(e.target.value) })
-            }
-            className="rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
-          />
-          <div className="flex gap-1">
-            <input
-              type="number"
-              placeholder="Stock"
-              value={form.stock}
-              onChange={(e) =>
-                setForm({ ...form, stock: Number(e.target.value) })
-              }
-              className="w-full rounded-lg border border-stone-300 p-2 text-sm text-stone-900 placeholder:text-stone-500"
-            />
-            <button
-              type="button"
-              onClick={() =>
-                startTransition(async () => {
-                  await addPackagingItem(form);
-                  setForm(emptyForm);
-                })
-              }
-              className="shrink-0 rounded-lg bg-brand-olive px-3 py-2 text-xs font-semibold text-white hover:bg-brand-olive-dark"
-            >
-              Add
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
