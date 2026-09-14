@@ -130,6 +130,14 @@ export default function OrderForm({
   const [notes, setNotes] = useState("");
   const [deliveryName, setDeliveryName] = useState("");
   const [deliveryPhone, setDeliveryPhone] = useState("");
+  const [recipientSameAsCustomer, setRecipientSameAsCustomer] =
+    useState(false);
+  const effectiveDeliveryName = recipientSameAsCustomer
+    ? customerName
+    : deliveryName;
+  const effectiveDeliveryPhone = recipientSameAsCustomer
+    ? contact
+    : deliveryPhone;
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [batchDate, setBatchDate] = useState(batchDates[0]?.date ?? "");
@@ -196,8 +204,8 @@ export default function OrderForm({
       return;
     }
     if (
-      !deliveryName.trim() ||
-      !deliveryPhone.trim() ||
+      !effectiveDeliveryName.trim() ||
+      !effectiveDeliveryPhone.trim() ||
       !deliveryAddress.trim()
     ) {
       setError("Please fill in the delivery name, phone number, and address.");
@@ -235,8 +243,8 @@ export default function OrderForm({
         zoneId: effectiveZoneId || null,
         notes,
         greetingCard,
-        deliveryName,
-        deliveryPhone,
+        deliveryName: effectiveDeliveryName,
+        deliveryPhone: effectiveDeliveryPhone,
         deliveryAddress,
         pickupTime: needsPickupTime ? pickupTime : "",
         items,
@@ -261,8 +269,8 @@ export default function OrderForm({
         contact,
         notes,
         greetingCard,
-        deliveryName,
-        deliveryPhone,
+        deliveryName: effectiveDeliveryName,
+        deliveryPhone: effectiveDeliveryPhone,
         deliveryAddress,
         pickupTime: needsPickupTime ? pickupTime : "",
       });
@@ -526,19 +534,30 @@ export default function OrderForm({
         <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
           5. Delivery details
         </h2>
+        <label className="flex items-center gap-2 text-sm text-stone-700">
+          <input
+            type="checkbox"
+            checked={recipientSameAsCustomer}
+            onChange={(e) => setRecipientSameAsCustomer(e.target.checked)}
+            className="h-4 w-4 accent-brand-olive"
+          />
+          Recipient is the same as my details above
+        </label>
         <input
           type="text"
           placeholder="Recipient name"
-          value={deliveryName}
+          value={effectiveDeliveryName}
           onChange={(e) => setDeliveryName(e.target.value)}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
+          disabled={recipientSameAsCustomer}
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500 disabled:bg-stone-100 disabled:text-stone-500"
         />
         <input
           type="text"
           placeholder="Recipient phone number"
-          value={deliveryPhone}
+          value={effectiveDeliveryPhone}
           onChange={(e) => setDeliveryPhone(e.target.value)}
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500"
+          disabled={recipientSameAsCustomer}
+          className="w-full rounded-lg border border-stone-300 p-3 text-sm text-stone-900 placeholder:text-stone-500 disabled:bg-stone-100 disabled:text-stone-500"
         />
         <textarea
           placeholder="Delivery address"
