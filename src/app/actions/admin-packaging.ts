@@ -44,6 +44,28 @@ export async function updatePackagingStock(id: string, stock: number) {
   return { ok: true };
 }
 
+export async function updatePackagingNameAndStock(
+  id: string,
+  name: string,
+  stock: number
+) {
+  await requireAdmin();
+  if (!name.trim()) {
+    return { ok: false, error: "Name is required." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("packaging_items")
+    .update({ name: name.trim(), stock })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/recipes");
+  return { ok: true };
+}
+
 export async function updatePackagingCost(id: string, costPerUnit: number) {
   await requireAdmin();
   const supabase = await createClient();

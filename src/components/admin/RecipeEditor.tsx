@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { formatIDRDecimal } from "@/lib/format";
 
 interface MenuItem {
   id: string;
@@ -92,6 +93,16 @@ export default function RecipeEditor({
         ))}
       </select>
 
+      <div className="flex items-center justify-between gap-3 px-0.5 text-xs font-semibold uppercase tracking-wide text-stone-500">
+        <span>Item</span>
+        <div className="flex items-center gap-2">
+          <span className="w-24">Qty/unit</span>
+          <span className="w-10"></span>
+          <span className="w-4"></span>
+          <span className="w-28 text-right">Cost/unit</span>
+        </div>
+      </div>
+
       <div className="divide-y divide-stone-100">
         {items.map((item) => (
           <div
@@ -114,23 +125,28 @@ export default function RecipeEditor({
                 className="w-24 rounded-lg border border-stone-300 p-1.5 text-sm"
               />
               <span className="w-10 text-xs text-stone-500">{item.unit}</span>
-              <span className="text-xs text-stone-400">@</span>
-              <input
-                type="number"
-                min={0}
-                step="any"
-                value={costs[item.id] ?? 0}
-                onChange={(e) =>
-                  setCosts((prev) => ({
-                    ...prev,
-                    [item.id]: Number(e.target.value),
-                  }))
-                }
-                onBlur={() => saveCost(item.id)}
-                disabled={costPending === item.id}
-                title="Cost per unit"
-                className="w-24 rounded-lg border border-stone-300 p-1.5 text-sm text-stone-600"
-              />
+              <span className="w-4 text-center text-xs text-stone-400">@</span>
+              <div className="w-28">
+                <input
+                  type="number"
+                  min={0}
+                  step="any"
+                  value={costs[item.id] ?? 0}
+                  onChange={(e) =>
+                    setCosts((prev) => ({
+                      ...prev,
+                      [item.id]: Number(e.target.value),
+                    }))
+                  }
+                  onBlur={() => saveCost(item.id)}
+                  disabled={costPending === item.id}
+                  title="Cost per unit"
+                  className="w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-600"
+                />
+                <p className="mt-0.5 text-right text-[11px] text-stone-400">
+                  {formatIDRDecimal(costs[item.id] ?? 0)}
+                </p>
+              </div>
             </div>
           </div>
         ))}

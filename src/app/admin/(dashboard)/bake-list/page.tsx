@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import BatchDateFilter from "@/components/admin/BatchDateFilter";
+import BatchDateMultiFilter from "@/components/admin/BatchDateMultiFilter";
 import IngredientNeeds from "@/components/admin/IngredientNeeds";
 import { getProductFamily } from "@/lib/menuRules";
 
@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
 export default async function BakeListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ batch?: string }>;
+  searchParams: Promise<{ batches?: string }>;
 }) {
-  const { batch } = await searchParams;
+  const { batches } = await searchParams;
   const supabase = await createClient();
 
   const [{ data: allOrders }, { data: recipes }, { data: ingredients }] =
@@ -28,9 +28,14 @@ export default async function BakeListPage({
 
   const today = new Date().toISOString().slice(0, 10);
   const defaultDate = dates.find((d) => d >= today) ?? dates[dates.length - 1];
-  const selected = batch && dates.includes(batch) ? batch : defaultDate;
+  const requested = batches
+    ? batches.split(",").filter((d) => dates.includes(d))
+    : [];
+  const selected = requested.length > 0 ? requested : [defaultDate];
 
-  const orders = (allOrders ?? []).filter((o) => o.batch_date === selected);
+  const orders = (allOrders ?? []).filter((o) =>
+    selected.includes(o.batch_date)
+  );
 
   const totals = new Map<string, number>();
   for (const order of orders) {
@@ -136,7 +141,7 @@ export default async function BakeListPage({
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-stone-900">Baking Guide</h1>
         {dates.length > 0 && (
-          <BatchDateFilter
+          <BatchDateMultiFilter
             dates={dates}
             selected={selected}
             basePath="/admin/bake-list"

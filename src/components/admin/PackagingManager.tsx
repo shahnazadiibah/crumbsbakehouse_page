@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import {
   addPackagingItem,
   deletePackagingItem,
-  updatePackagingStock,
+  updatePackagingNameAndStock,
   type PackagingInput,
 } from "@/app/actions/admin-packaging";
 
@@ -35,6 +35,7 @@ export default function PackagingManager({
 }) {
   const [isPending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
   const [editStock, setEditStock] = useState(0);
   const [form, setForm] = useState<PackagingInput>(emptyForm);
 
@@ -60,8 +61,12 @@ export default function PackagingManager({
 
               return editingId === item.id ? (
                 <tr key={item.id}>
-                  <td className="px-4 py-2 align-top text-stone-600">
-                    {item.name}
+                  <td className="px-4 py-2 align-top">
+                    <input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className={inputClass}
+                    />
                   </td>
                   <td className="px-4 py-2 align-top text-stone-600">
                     {item.unit || "—"}
@@ -84,7 +89,11 @@ export default function PackagingManager({
                       disabled={isPending}
                       onClick={() =>
                         startTransition(async () => {
-                          await updatePackagingStock(item.id, editStock);
+                          await updatePackagingNameAndStock(
+                            item.id,
+                            editName,
+                            editStock
+                          );
                           setEditingId(null);
                         })
                       }
@@ -129,6 +138,7 @@ export default function PackagingManager({
                     <button
                       onClick={() => {
                         setEditingId(item.id);
+                        setEditName(item.name);
                         setEditStock(item.stock);
                       }}
                       className="mr-3 font-medium text-stone-700 hover:underline"

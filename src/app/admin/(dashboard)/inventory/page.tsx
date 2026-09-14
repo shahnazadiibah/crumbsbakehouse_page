@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import BatchDateFilter from "@/components/admin/BatchDateFilter";
+import BatchDateMultiFilter from "@/components/admin/BatchDateMultiFilter";
 import IngredientsManager from "@/components/admin/IngredientsManager";
 import PackagingManager from "@/components/admin/PackagingManager";
 
@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
 export default async function InventoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ batch?: string }>;
+  searchParams: Promise<{ batches?: string }>;
 }) {
-  const { batch } = await searchParams;
+  const { batches } = await searchParams;
   const supabase = await createClient();
 
   const [
@@ -49,11 +49,13 @@ export default async function InventoryPage({
   const today = new Date().toISOString().slice(0, 10);
   const defaultDate =
     openDates.find((d) => d >= today) ?? openDates[openDates.length - 1];
-  const selectedBatch =
-    batch && openDates.includes(batch) ? batch : defaultDate;
+  const requested = batches
+    ? batches.split(",").filter((d) => openDates.includes(d))
+    : [];
+  const selectedBatches = requested.length > 0 ? requested : [defaultDate];
 
-  const batchOrders = (allOrders ?? []).filter(
-    (o) => o.batch_date === selectedBatch
+  const batchOrders = (allOrders ?? []).filter((o) =>
+    selectedBatches.includes(o.batch_date)
   );
 
   const recipesByMenuItem = new Map<
@@ -115,9 +117,9 @@ export default async function InventoryPage({
           for the batch selected here.
         </p>
         {openDates.length > 0 && (
-          <BatchDateFilter
+          <BatchDateMultiFilter
             dates={openDates}
-            selected={selectedBatch}
+            selected={selectedBatches}
             basePath="/admin/inventory"
           />
         )}
