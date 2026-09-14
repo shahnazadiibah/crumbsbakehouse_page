@@ -166,7 +166,7 @@ export default function RecipeEditor({
               <th className="border-l border-stone-200 px-1 py-2 text-left">
                 Qty/Unit
               </th>
-              <th className="px-1 py-2 text-right">Cost</th>
+              <th className="w-36 px-2 py-2 text-right">Cost</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
@@ -267,7 +267,7 @@ export default function RecipeEditor({
                         )
                       }
                       disabled={fieldPending === `unit-${item.id}`}
-                      className={`${cellInputClass} w-16`}
+                      className={`${cellInputClass} w-10`}
                     />
                   </td>
                   <td className="border-l border-stone-200 px-1 py-1">
@@ -285,7 +285,7 @@ export default function RecipeEditor({
                       className="w-20 rounded-lg border border-stone-300 p-1 text-sm"
                     />
                   </td>
-                  <td className="px-1 py-1 text-right text-stone-600">
+                  <td className="w-36 px-2 py-1 text-right text-stone-600">
                     {lineCost > 0 ? `Rp ${formatDecimal(lineCost)}` : "—"}
                   </td>
                 </tr>
