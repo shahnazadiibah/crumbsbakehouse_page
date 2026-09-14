@@ -333,7 +333,7 @@ export default function OrderForm({
                 <img
                   src={confirmedOrder.qrCodeUrl}
                   alt="QRIS payment code"
-                  className="h-72 w-72 object-contain"
+                  className="h-[432px] w-[432px] object-contain"
                   onError={(e) => {
                     (e.currentTarget.parentElement as HTMLElement).style.display =
                       "none";

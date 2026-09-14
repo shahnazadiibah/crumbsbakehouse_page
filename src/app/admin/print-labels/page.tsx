@@ -26,15 +26,15 @@ function chunk<T>(arr: T[], size: number): T[][] {
 export default async function PrintLabelsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ batch?: string }>;
+  searchParams: Promise<{ from?: string; to?: string }>;
 }) {
-  const { batch } = await searchParams;
+  const { from, to } = await searchParams;
   const supabase = await createClient();
 
-  if (!batch) {
+  if (!from || !to) {
     return (
       <div className="p-8 text-sm text-stone-500">
-        Missing ?batch= date. Open this page from the Orders tab.
+        Missing ?from=&to= dates. Open this page from the Orders tab.
       </div>
     );
   }
@@ -44,7 +44,8 @@ export default async function PrintLabelsPage({
     .select(
       "id, delivery_name, delivery_phone, delivery_address, items, pickup_time, greeting_card"
     )
-    .eq("batch_date", batch)
+    .gte("batch_date", from)
+    .lte("batch_date", to)
     .order("created_at");
 
   const pages = chunk(orders ?? [], LABELS_PER_PAGE);
@@ -57,7 +58,10 @@ export default async function PrintLabelsPage({
 
       <div className="flex items-center justify-between print:hidden">
         <h1 className="text-xl font-semibold text-stone-900">
-          Delivery labels — {formatBatchLabel(batch)}
+          Delivery labels —{" "}
+          {from === to
+            ? formatBatchLabel(from)
+            : `${formatBatchLabel(from)} to ${formatBatchLabel(to)}`}
         </h1>
         <PrintButton />
       </div>

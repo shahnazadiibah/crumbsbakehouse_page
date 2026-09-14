@@ -38,7 +38,7 @@ interface OrderRow {
 
 const STATUSES: OrderStatus[] = ["Pending", "Ready", "Done"];
 
-function exportOrders(orders: OrderRow[], batchDate: string) {
+function exportOrders(orders: OrderRow[], rangeFrom: string, rangeTo: string) {
   const headers = [
     "Customer name",
     "Contact",
@@ -75,16 +75,19 @@ function exportOrders(orders: OrderRow[], batchDate: string) {
     order.notes ?? "",
   ]);
 
-  downloadCsv(`crumbs-orders-${batchDate}.csv`, headers, rows);
+  const filenameDate = rangeFrom === rangeTo ? rangeFrom : `${rangeFrom}_to_${rangeTo}`;
+  downloadCsv(`crumbs-orders-${filenameDate}.csv`, headers, rows);
 }
 
 export default function OrdersTable({
   orders,
-  batchDate,
+  rangeFrom,
+  rangeTo,
   menuItems,
 }: {
   orders: OrderRow[];
-  batchDate: string;
+  rangeFrom: string;
+  rangeTo: string;
   menuItems: MenuItem[];
 }) {
   const [isPending, startTransition] = useTransition();
@@ -129,7 +132,7 @@ export default function OrdersTable({
 
       <div className="flex justify-end gap-2">
         <a
-          href={`/admin/print-labels?batch=${batchDate}`}
+          href={`/admin/print-labels?from=${rangeFrom}&to=${rangeTo}`}
           target="_blank"
           rel="noopener noreferrer"
           className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100"
@@ -137,7 +140,7 @@ export default function OrdersTable({
           Print delivery labels
         </a>
         <button
-          onClick={() => exportOrders(orders, batchDate)}
+          onClick={() => exportOrders(orders, rangeFrom, rangeTo)}
           className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100"
         >
           Export to Excel (CSV)

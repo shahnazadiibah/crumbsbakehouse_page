@@ -3,35 +3,47 @@
 import { useRouter } from "next/navigation";
 
 interface BatchDateFilterProps {
-  dates: string[];
-  selected: string;
+  minDate: string;
+  maxDate: string;
+  from: string;
+  to: string;
   basePath: string;
 }
 
 export default function BatchDateFilter({
-  dates,
-  selected,
+  minDate,
+  maxDate,
+  from,
+  to,
   basePath,
 }: BatchDateFilterProps) {
   const router = useRouter();
 
+  function update(nextFrom: string, nextTo: string) {
+    const rangeFrom = nextFrom <= nextTo ? nextFrom : nextTo;
+    const rangeTo = nextFrom <= nextTo ? nextTo : nextFrom;
+    router.push(`${basePath}?from=${rangeFrom}&to=${rangeTo}`);
+  }
+
   return (
-    <select
-      value={selected}
-      onChange={(e) => router.push(`${basePath}?batch=${e.target.value}`)}
-      className="rounded-lg border border-stone-300 p-2 text-sm"
-    >
-      {dates.map((date) => (
-        <option key={date} value={date}>
-          {new Date(date + "T00:00:00Z").toLocaleDateString("en-GB", {
-            weekday: "short",
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-            timeZone: "UTC",
-          })}
-        </option>
-      ))}
-    </select>
+    <div className="flex items-center gap-2 text-sm">
+      <input
+        type="date"
+        value={from}
+        min={minDate}
+        max={maxDate}
+        onChange={(e) => update(e.target.value, to)}
+        className="rounded-lg border border-stone-300 p-2 text-sm text-stone-700"
+      />
+      <span className="text-stone-400">to</span>
+      <input
+        type="date"
+        value={to}
+        min={minDate}
+        max={maxDate}
+        onChange={(e) => update(from, e.target.value)}
+        className="rounded-lg border border-stone-300 p-2 text-sm text-stone-700"
+      />
+    </div>
   );
 }

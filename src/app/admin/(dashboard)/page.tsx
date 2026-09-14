@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
 export default async function AdminOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ batch?: string }>;
+  searchParams: Promise<{ from?: string; to?: string }>;
 }) {
-  const { batch } = await searchParams;
+  const { from, to } = await searchParams;
   const supabase = await createClient();
 
   // Fetched once and filtered/sorted in JS below, rather than a first
@@ -35,10 +35,23 @@ export default async function AdminOrdersPage({
 
   const today = new Date().toISOString().slice(0, 10);
   const defaultDate = dates.find((d) => d >= today) ?? dates[dates.length - 1];
-  const selected = batch && dates.includes(batch) ? batch : defaultDate;
+  const minDate = dates[0] ?? defaultDate ?? today;
+  const maxDate = dates[dates.length - 1] ?? defaultDate ?? today;
+
+  // Clamp requested range into the bounds of dates that actually have
+  // orders, so a stale/out-of-range URL param can't produce an empty
+  // date picker or a range with nothing to filter against.
+  function clamp(value: string | undefined, fallback: string) {
+    const v = value || fallback;
+    return v < minDate ? minDate : v > maxDate ? maxDate : v;
+  }
+  const clampedFrom = clamp(from, defaultDate ?? today);
+  const clampedTo = clamp(to, defaultDate ?? today);
+  const rangeFrom = clampedFrom <= clampedTo ? clampedFrom : clampedTo;
+  const rangeTo = clampedFrom <= clampedTo ? clampedTo : clampedFrom;
 
   const orders = (allOrders ?? [])
-    .filter((o) => o.batch_date === selected)
+    .filter((o) => o.batch_date >= rangeFrom && o.batch_date <= rangeTo)
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   return (
@@ -56,8 +69,10 @@ export default async function AdminOrdersPage({
         <h1 className="text-xl font-semibold text-stone-900">Orders</h1>
         {dates.length > 0 && (
           <BatchDateFilter
-            dates={dates}
-            selected={selected}
+            minDate={minDate}
+            maxDate={maxDate}
+            from={rangeFrom}
+            to={rangeTo}
             basePath="/admin"
           />
         )}
@@ -70,7 +85,8 @@ export default async function AdminOrdersPage({
       ) : (
         <OrdersTable
           orders={orders}
-          batchDate={selected}
+          rangeFrom={rangeFrom}
+          rangeTo={rangeTo}
           menuItems={menuItems ?? []}
         />
       )}
