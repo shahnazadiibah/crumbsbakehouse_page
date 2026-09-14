@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import BatchDateFilter from "@/components/admin/BatchDateFilter";
 import OrdersTable from "@/components/admin/OrdersTable";
+import OpenDatesManager from "@/components/admin/OpenDatesManager";
 
 export const dynamic = "force-dynamic";
 
@@ -16,12 +17,15 @@ export default async function AdminOrdersPage({
   // query for just the batch dates followed by a second query for the
   // selected date's rows — with order volume this small, one round trip
   // for everything is cheaper than two sequential ones.
-  const { data: allOrders } = await supabase
-    .from("orders")
-    .select(
-      "id, customer_name, contact, batch_date, items, delivery_fee, items_total, grand_total, paid, status, notes, greeting_card, delivery_name, delivery_phone, delivery_address, pickup_time, created_at"
-    )
-    .order("created_at");
+  const [{ data: allOrders }, { data: openBatchDates }] = await Promise.all([
+    supabase
+      .from("orders")
+      .select(
+        "id, customer_name, contact, batch_date, items, delivery_fee, items_total, grand_total, paid, status, notes, greeting_card, delivery_name, delivery_phone, delivery_address, pickup_time, created_at"
+      )
+      .order("created_at"),
+    supabase.from("open_batch_dates").select("date"),
+  ]);
 
   const dates = Array.from(
     new Set((allOrders ?? []).map((r) => r.batch_date))
@@ -36,7 +40,16 @@ export default async function AdminOrdersPage({
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
+          Pre-order dates
+        </h2>
+        <OpenDatesManager
+          dates={(openBatchDates ?? []).map((d) => d.date)}
+        />
+      </section>
+
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-stone-900">Orders</h1>
         {dates.length > 0 && (

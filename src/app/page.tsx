@@ -1,11 +1,11 @@
 import Image from "next/image";
 import { createPublicClient } from "@/lib/supabase/public";
-import { getUpcomingBatchDates } from "@/lib/batchDates";
+import { getSelectableBatchDates } from "@/lib/batchDates";
 import OrderForm from "@/components/order/OrderForm";
 
-// Menu/delivery-zone data and the upcoming batch dates change rarely, so
-// a short revalidation window avoids hitting Supabase on every request
-// while still staying fresh well within the Friday-16:00-WIB cutoff.
+// Menu/delivery-zone/open-date data changes rarely, so a short
+// revalidation window avoids hitting Supabase on every request while
+// still staying fresh well within the 2-day lead time rule.
 // Uses the cookie-free public client (see src/lib/supabase/public.ts) so
 // this actually gets cached instead of being forced dynamic.
 export const revalidate = 60;
@@ -13,22 +13,23 @@ export const revalidate = 60;
 export default async function Home() {
   const supabase = createPublicClient();
 
-  const [{ data: menuItems }, { data: deliveryZones }] = await Promise.all([
-    supabase
-      .from("menu_items")
-      .select("id, name, price")
-      .eq("active", true)
-      .order("created_at"),
-    supabase
-      .from("delivery_zones")
-      .select("id, name, fee")
-      .order("created_at"),
-  ]);
+  const [{ data: menuItems }, { data: deliveryZones }, { data: openDates }] =
+    await Promise.all([
+      supabase
+        .from("menu_items")
+        .select("id, name, price")
+        .eq("active", true)
+        .order("created_at"),
+      supabase
+        .from("delivery_zones")
+        .select("id, name, fee")
+        .order("created_at"),
+      supabase.from("open_batch_dates").select("date"),
+    ]);
 
-  const batchDates = getUpcomingBatchDates(4).map((b) => ({
-    date: b.date,
-    label: b.label,
-  }));
+  const batchDates = getSelectableBatchDates(
+    (openDates ?? []).map((d) => d.date)
+  );
 
   return (
     <div className="min-h-screen bg-brand-cream px-4 py-10">

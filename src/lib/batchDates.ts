@@ -1,28 +1,24 @@
 // Business rules for pre-order batch dates.
 //
-// Crumbs Bakehouse bakes on Saturdays. Orders for a given Saturday close
-// at Friday 16:00 local time (WIB / Asia-Jakarta, UTC+7, no DST) — once
-// that instant passes, that Saturday drops off the list of orderable
-// batch dates and the next Saturday becomes the earliest option.
+// Which calendar dates are open for pre-order is now admin-controlled
+// (the open_batch_dates table) rather than hardcoded to Saturdays. The
+// one remaining fixed rule is the D-2 cutoff: an order for date D must
+// be placed by the end of D-2 (WIB) — so D and D-1 are never orderable,
+// regardless of what the admin has opened.
 //
 // All comparisons are done against epoch milliseconds (Date.now()), so
 // this is correct regardless of the server's own timezone (important for
 // Netlify functions, which run in UTC).
 
 const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MIN_LEAD_DAYS = 2;
 
 export interface BatchDateOption {
   /** Batch date in YYYY-MM-DD form, suitable for the `orders.batch_date` column. */
   date: string;
   /** Human-readable label, e.g. "Saturday, 5 Jul 2026". */
   label: string;
-  /** The Friday-16:00-WIB instant after which this date is no longer orderable. */
-  cutoff: Date;
-}
-
-/** "Now", but with UTC-getters returning WIB wall-clock components. */
-function shiftedNowForWallClock(): Date {
-  return new Date(Date.now() + WIB_OFFSET_MS);
 }
 
 function pad(n: number): string {
@@ -33,54 +29,47 @@ function toDateString(y: number, m: number, d: number): string {
   return `${y}-${pad(m + 1)}-${pad(d)}`;
 }
 
+/** Today's calendar date in WIB, as a YYYY-MM-DD string. */
+function todayWIB(): string {
+  const wallNow = new Date(Date.now() + WIB_OFFSET_MS);
+  return toDateString(
+    wallNow.getUTCFullYear(),
+    wallNow.getUTCMonth(),
+    wallNow.getUTCDate()
+  );
+}
+
+function dateStringToUTCms(date: string): number {
+  const [y, m, d] = date.split("-").map(Number);
+  return Date.UTC(y, m - 1, d);
+}
+
+/** True if `date` (YYYY-MM-DD) is at least MIN_LEAD_DAYS from today (WIB). */
+export function isWithinLeadTime(date: string): boolean {
+  const daysAhead =
+    (dateStringToUTCms(date) - dateStringToUTCms(todayWIB())) / DAY_MS;
+  return daysAhead >= MIN_LEAD_DAYS;
+}
+
+function formatLabel(date: string): string {
+  return new Date(date + "T00:00:00Z").toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 /**
- * Returns the next `count` Saturdays that are still open for ordering
- * (i.e. their Friday-16:00-WIB cutoff has not yet passed), soonest first.
+ * Given the admin-opened dates (YYYY-MM-DD strings, any order), returns
+ * the ones still orderable under the D-2 lead time rule, soonest first.
  */
-export function getUpcomingBatchDates(count = 4): BatchDateOption[] {
-  const wallNow = shiftedNowForWallClock();
-  const y = wallNow.getUTCFullYear();
-  const m = wallNow.getUTCMonth();
-  const d = wallNow.getUTCDate();
-  const dayOfWeek = wallNow.getUTCDay(); // 0 = Sun ... 6 = Sat
-
-  // Days from "today" (WIB) to the next Saturday. If today IS Saturday,
-  // that batch's cutoff (yesterday 16:00) has necessarily already passed,
-  // so jump straight to next week's Saturday.
-  const daysUntilSaturday = dayOfWeek === 6 ? 7 : (6 - dayOfWeek + 7) % 7;
-
-  const options: BatchDateOption[] = [];
-  const nowMs = Date.now();
-
-  // Walk forward week by week, collecting Saturdays whose cutoff hasn't
-  // passed, until we have `count` of them (cap the search to avoid an
-  // infinite loop in case of a clock/logic error).
-  for (let week = 0, found = 0; week < 26 && found < count; week++) {
-    const offsetDays = daysUntilSaturday + week * 7;
-    const saturdayUTC = new Date(Date.UTC(y, m, d + offsetDays));
-    const sy = saturdayUTC.getUTCFullYear();
-    const sm = saturdayUTC.getUTCMonth();
-    const sd = saturdayUTC.getUTCDate();
-
-    // Friday 16:00 WIB = Friday 09:00 UTC (WIB is always UTC+7, no DST),
-    // and Friday is exactly one calendar day before this Saturday.
-    const cutoff = new Date(Date.UTC(sy, sm, sd - 1, 9, 0, 0));
-
-    if (nowMs < cutoff.getTime()) {
-      options.push({
-        date: toDateString(sy, sm, sd),
-        label: saturdayUTC.toLocaleDateString("en-GB", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          timeZone: "UTC",
-        }),
-        cutoff,
-      });
-      found++;
-    }
-  }
-
-  return options;
+export function getSelectableBatchDates(
+  openDates: string[]
+): BatchDateOption[] {
+  return openDates
+    .filter(isWithinLeadTime)
+    .sort()
+    .map((date) => ({ date, label: formatLabel(date) }));
 }

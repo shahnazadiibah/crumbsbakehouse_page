@@ -126,6 +126,20 @@ export interface Database {
         >;
         Relationships: [];
       };
+      open_batch_dates: {
+        Row: {
+          date: string;
+          created_at: string;
+        };
+        Insert: {
+          date: string;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["open_batch_dates"]["Insert"]
+        >;
+        Relationships: [];
+      };
       packaging_items: {
         Row: {
           id: string;

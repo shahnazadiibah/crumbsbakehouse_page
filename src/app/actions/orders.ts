@@ -1,7 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getUpcomingBatchDates } from "@/lib/batchDates";
+import { isWithinLeadTime } from "@/lib/batchDates";
 import {
   isMandatoryWholeCakeZone,
   isWholeCakeItem,
@@ -65,12 +65,11 @@ export async function submitOrder(
     return { ok: false, error: "Please select at least one item." };
   }
 
-  const validBatchDates = getUpcomingBatchDates(12).map((b) => b.date);
-  if (!validBatchDates.includes(input.batchDate)) {
+  if (!isWithinLeadTime(input.batchDate)) {
     return {
       ok: false,
       error:
-        "That batch date is no longer available (the Friday 16:00 cutoff may have passed). Please pick another date.",
+        "That batch date no longer has enough lead time (orders need to be placed at least 2 days ahead). Please pick another date.",
     };
   }
 
@@ -80,12 +79,18 @@ export async function submitOrder(
   const [
     { data: menuItems, error: menuError },
     { data: allZones, error: zonesError },
+    { data: openDate, error: openDateError },
   ] = await Promise.all([
     supabase
       .from("menu_items")
       .select("id, name, price, active")
       .in("id", menuItemIds),
     supabase.from("delivery_zones").select("id, name, fee"),
+    supabase
+      .from("open_batch_dates")
+      .select("date")
+      .eq("date", input.batchDate)
+      .maybeSingle(),
   ]);
 
   if (menuError || !menuItems) {
@@ -93,6 +98,12 @@ export async function submitOrder(
   }
   if (zonesError || !allZones) {
     return { ok: false, error: "Could not load delivery options. Please try again." };
+  }
+  if (openDateError || !openDate) {
+    return {
+      ok: false,
+      error: "That batch date is not open for pre-order. Please pick another date.",
+    };
   }
 
   const items: OrderItem[] = [];
