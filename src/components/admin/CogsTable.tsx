@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { formatIDR } from "@/lib/format";
+import { formatIDR, formatNumberComma } from "@/lib/format";
 
 interface CogsRow {
   id: string;
@@ -78,6 +78,9 @@ export default function CogsTable({
                     disabled={isPending && pendingId === m.id}
                     className="w-28 rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900"
                   />
+                  <p className="mt-0.5 text-xs text-stone-400">
+                    {formatNumberComma(price)}
+                  </p>
                 </td>
                 <td className="px-4 py-3 text-stone-600">
                   {formatIDR(m.ingredientCost)}

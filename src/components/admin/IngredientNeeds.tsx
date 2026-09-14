@@ -62,22 +62,35 @@ export default function IngredientNeeds({
                 ))}
               </ul>
             )}
-            <div className="divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
-              {ingredients.map((ing) => {
-                const qty =
-                  portion === null ? ing.orderQty : ing.baseQty * portion;
-                return (
-                  <div
-                    key={ing.name}
-                    className="flex items-center justify-between px-4 py-3 text-sm"
-                  >
-                    <span className="text-stone-900">{ing.name}</span>
-                    <span className="font-semibold text-stone-900">
-                      {Number(qty.toFixed(2))} {ing.unit}
-                    </span>
-                  </div>
-                );
-              })}
+            <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white">
+              <table className="w-full text-sm">
+                <thead className="border-b border-stone-200 bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-500">
+                  <tr>
+                    <th className="px-4 py-2">Ingredient</th>
+                    <th className="px-4 py-2 text-right">Needed for batch</th>
+                    <th className="px-4 py-2 text-right">Unit</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {ingredients.map((ing) => {
+                    const qty =
+                      portion === null ? ing.orderQty : ing.baseQty * portion;
+                    return (
+                      <tr key={ing.name}>
+                        <td className="px-4 py-3 text-stone-900">
+                          {ing.name}
+                        </td>
+                        <td className="px-4 py-3 text-right font-semibold text-stone-900">
+                          {Number(qty.toFixed(2))}
+                        </td>
+                        <td className="px-4 py-3 text-right text-stone-500">
+                          {ing.unit}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         );

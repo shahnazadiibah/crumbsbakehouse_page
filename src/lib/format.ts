@@ -20,3 +20,8 @@ export function formatDecimal(amount: number): string {
     maximumFractionDigits: 2,
   });
 }
+
+// "175,000" — comma thousands separator, no decimals.
+export function formatNumberComma(amount: number): string {
+  return amount.toLocaleString("en-US", { maximumFractionDigits: 0 });
+}
