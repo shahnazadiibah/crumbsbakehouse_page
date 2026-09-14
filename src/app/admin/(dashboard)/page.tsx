@@ -17,15 +17,17 @@ export default async function AdminOrdersPage({
   // query for just the batch dates followed by a second query for the
   // selected date's rows — with order volume this small, one round trip
   // for everything is cheaper than two sequential ones.
-  const [{ data: allOrders }, { data: openBatchDates }] = await Promise.all([
-    supabase
-      .from("orders")
-      .select(
-        "id, customer_name, contact, batch_date, items, delivery_fee, items_total, grand_total, paid, status, notes, greeting_card, delivery_name, delivery_phone, delivery_address, pickup_time, created_at"
-      )
-      .order("created_at"),
-    supabase.from("open_batch_dates").select("date"),
-  ]);
+  const [{ data: allOrders }, { data: openBatchDates }, { data: menuItems }] =
+    await Promise.all([
+      supabase
+        .from("orders")
+        .select(
+          "id, customer_name, contact, batch_date, items, delivery_fee, items_total, grand_total, paid, status, notes, greeting_card, delivery_name, delivery_phone, delivery_address, pickup_time, created_at"
+        )
+        .order("created_at"),
+      supabase.from("open_batch_dates").select("date"),
+      supabase.from("menu_items").select("id, name, price").order("name"),
+    ]);
 
   const dates = Array.from(
     new Set((allOrders ?? []).map((r) => r.batch_date))
@@ -66,7 +68,11 @@ export default async function AdminOrdersPage({
           No orders have been placed yet.
         </p>
       ) : (
-        <OrdersTable orders={orders} batchDate={selected} />
+        <OrdersTable
+          orders={orders}
+          batchDate={selected}
+          menuItems={menuItems ?? []}
+        />
       )}
     </div>
   );

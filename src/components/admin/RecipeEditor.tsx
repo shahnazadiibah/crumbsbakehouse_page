@@ -123,7 +123,7 @@ export default function RecipeEditor({
       <select
         value={menuItemId}
         onChange={(e) => selectMenuItem(e.target.value)}
-        className="rounded-lg border border-stone-300 p-2 text-sm"
+        className="w-full max-w-md rounded-lg border border-stone-300 p-2 text-sm"
       >
         {menuItems.map((m) => (
           <option key={m.id} value={m.id}>
@@ -138,7 +138,7 @@ export default function RecipeEditor({
           <span className="w-24">Qty/unit</span>
           <span className="w-10"></span>
           <span className="w-4"></span>
-          <span className="w-28 text-right">Cost</span>
+          <span className="w-28 text-right">COST (Rp)</span>
         </div>
       </div>
 
@@ -197,10 +197,12 @@ export default function RecipeEditor({
                     title="Cost per unit (editable)"
                     className="w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-600"
                   />
-                  <div className="mt-0.5 flex justify-between text-[11px] text-stone-400">
-                    <span>Rp</span>
-                    <span>{formatDecimal(lineCost)}</span>
-                  </div>
+                  {lineCost > 0 && (
+                    <div className="mt-0.5 flex justify-between text-[11px] text-stone-400">
+                      <span>Rp</span>
+                      <span>{formatDecimal(lineCost)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

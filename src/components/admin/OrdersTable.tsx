@@ -11,6 +11,12 @@ import { downloadCsv } from "@/lib/csv";
 import { formatIDR } from "@/lib/format";
 import type { OrderItem, OrderStatus } from "@/lib/supabase/types";
 
+interface MenuItem {
+  id: string;
+  name: string;
+  price: number;
+}
+
 interface OrderRow {
   id: string;
   customer_name: string;
@@ -74,13 +80,16 @@ function exportOrders(orders: OrderRow[], batchDate: string) {
 export default function OrdersTable({
   orders,
   batchDate,
+  menuItems,
 }: {
   orders: OrderRow[];
   batchDate: string;
+  menuItems: MenuItem[];
 }) {
   const [isPending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editItems, setEditItems] = useState<OrderItem[]>([]);
+  const [addItemId, setAddItemId] = useState(menuItems[0]?.id ?? "");
 
   if (orders.length === 0) {
     return (
@@ -170,7 +179,7 @@ export default function OrdersTable({
                 </td>
                 <td className="px-4 py-3 align-top">
                   {editingId === order.id ? (
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       {editItems.map((item, i) => (
                         <div key={i} className="flex items-center gap-2">
                           <input
@@ -188,8 +197,57 @@ export default function OrdersTable({
                             className="w-16 rounded-lg border border-stone-300 p-1 text-sm text-stone-900"
                           />
                           <span>x {item.name}</span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setEditItems((prev) =>
+                                prev.filter((_, idx) => idx !== i)
+                              )
+                            }
+                            className="text-red-600 hover:underline"
+                            title="Remove item"
+                          >
+                            ✕
+                          </button>
                         </div>
                       ))}
+
+                      {menuItems.length > 0 && (
+                        <div className="flex items-center gap-2 pt-1">
+                          <select
+                            value={addItemId}
+                            onChange={(e) => setAddItemId(e.target.value)}
+                            className="rounded-lg border border-stone-300 p-1 text-xs text-stone-700"
+                          >
+                            {menuItems.map((m) => (
+                              <option key={m.id} value={m.id}>
+                                {m.name}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const menuItem = menuItems.find(
+                                (m) => m.id === addItemId
+                              );
+                              if (!menuItem) return;
+                              setEditItems((prev) => [
+                                ...prev,
+                                {
+                                  menu_item_id: menuItem.id,
+                                  name: menuItem.name,
+                                  price: menuItem.price,
+                                  qty: 1,
+                                },
+                              ]);
+                            }}
+                            className="rounded-lg border border-stone-300 px-2 py-1 text-xs font-medium text-stone-700 hover:bg-stone-100"
+                          >
+                            + Add item
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     order.items.map((item, i) => (
@@ -292,7 +350,7 @@ export default function OrdersTable({
                         }}
                         className="mr-3 font-medium text-stone-700 hover:underline"
                       >
-                        Edit qty
+                        Edit items
                       </button>
                       <button
                         disabled={isPending}

@@ -5,7 +5,7 @@ const NAV_ITEMS = [
   { href: "/admin", label: "Orders" },
   { href: "/admin/bake-list", label: "Baking Guide" },
   { href: "/admin/inventory", label: "Inventory" },
-  { href: "/admin/batches", label: "Batches" },
+  { href: "/admin/batches", label: "Finance" },
   { href: "/admin/recipes", label: "COGS" },
 ];
 

@@ -62,7 +62,7 @@ export default function OpenDatesManager({ dates }: { dates: string[] }) {
   }
 
   return (
-    <div className="w-fit max-w-md space-y-4 rounded-xl border border-stone-200 bg-white p-4">
+    <div className="w-fit space-y-4 rounded-xl border border-stone-200 bg-white p-4">
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -101,7 +101,7 @@ export default function OpenDatesManager({ dates }: { dates: string[] }) {
               type="button"
               disabled={isPending}
               onClick={() => toggle(date)}
-              className={`aspect-square rounded-lg text-sm transition-colors disabled:opacity-50 ${
+              className={`h-10 w-16 rounded-lg text-sm transition-colors disabled:opacity-50 ${
                 openDates.has(date)
                   ? "bg-brand-olive font-semibold text-white hover:bg-brand-olive-dark"
                   : "text-stone-700 hover:bg-stone-100"
