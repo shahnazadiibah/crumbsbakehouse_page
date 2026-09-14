@@ -32,6 +32,7 @@ export interface SubmitOrderResult {
     deliveryFee: number;
     grandTotal: number;
     items: OrderItem[];
+    qrCodeUrl: string;
   };
 }
 
@@ -182,6 +183,10 @@ export async function submitOrder(
     return { ok: false, error: "Could not submit order. Please try again." };
   }
 
+  const {
+    data: { publicUrl: qrCodeUrl },
+  } = supabase.storage.from("payment-assets").getPublicUrl("qris.png");
+
   return {
     ok: true,
     order: {
@@ -190,6 +195,7 @@ export async function submitOrder(
       deliveryFee,
       grandTotal,
       items,
+      qrCodeUrl,
     },
   };
 }

@@ -35,11 +35,16 @@ interface OrderFormProps {
   batchDates: BatchDateOption[];
 }
 
-const BANK_DETAILS = {
-  bankName: "Bank Mandiri",
-  accountNumber: "1300024065115",
-  accountHolder: "Shahnaz Adiibah",
-};
+async function downloadQrCode(url: string) {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = "crumbs-bakehouse-qris.png";
+  link.click();
+  URL.revokeObjectURL(blobUrl);
+}
 
 interface ConfirmedOrder {
   id: string;
@@ -47,6 +52,7 @@ interface ConfirmedOrder {
   itemsTotal: number;
   deliveryFee: number;
   grandTotal: number;
+  qrCodeUrl: string;
   batchLabel: string;
   zoneName: string;
   deliveryNeedsConfirmation: boolean;
@@ -151,7 +157,6 @@ export default function OrderForm({
     null
   );
   const [copiedAmount, setCopiedAmount] = useState(false);
-  const [copiedAccount, setCopiedAccount] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function copyToClipboard(text: string, setCopied: (v: boolean) => void) {
@@ -262,6 +267,7 @@ export default function OrderForm({
         itemsTotal: result.order.itemsTotal,
         deliveryFee: result.order.deliveryFee,
         grandTotal: result.order.grandTotal,
+        qrCodeUrl: result.order.qrCodeUrl,
         batchLabel:
           batchDates.find((b) => b.date === batchDate)?.label ?? batchDate,
         zoneName: selectedZone?.name ?? "N/A",
@@ -293,7 +299,7 @@ export default function OrderForm({
           <p className="mt-1 whitespace-pre-line text-sm text-stone-600">
             {confirmedOrder.deliveryNeedsConfirmation
               ? "The delivery fee is not included in the total just yet.\n\nPlease send the confirmation message below to our WhatsApp and our team will confirm your final total."
-              : "Please pay the exact amount to the bank details below, then send us your payment proof along with the confirmation message via WhatsApp."}
+              : "Please pay the exact amount by scanning the QRIS code below, then send us your payment proof along with the confirmation message via WhatsApp."}
           </p>
         </div>
 
@@ -320,37 +326,28 @@ export default function OrderForm({
               </div>
             </div>
 
-            <div className="space-y-2 rounded-lg border border-stone-200 bg-white p-3 text-sm">
-              <div>
-                <p className="text-stone-500">Bank</p>
-                <p className="font-medium text-stone-900">
-                  {BANK_DETAILS.bankName}
-                </p>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <p className="text-stone-500">Account number</p>
-                  <p className="font-medium text-stone-900">
-                    {BANK_DETAILS.accountNumber}
-                  </p>
-                </div>
+            {confirmedOrder.qrCodeUrl && (
+              <div className="flex flex-col items-center gap-2 rounded-lg border border-stone-200 bg-white p-3">
+                <p className="text-sm text-stone-500">Scan to pay via QRIS</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={confirmedOrder.qrCodeUrl}
+                  alt="QRIS payment code"
+                  className="h-48 w-48 object-contain"
+                  onError={(e) => {
+                    (e.currentTarget.parentElement as HTMLElement).style.display =
+                      "none";
+                  }}
+                />
                 <button
                   type="button"
-                  onClick={() =>
-                    copyToClipboard(BANK_DETAILS.accountNumber, setCopiedAccount)
-                  }
-                  className="shrink-0 rounded-lg border border-stone-300 px-2 py-1 text-xs font-medium text-stone-700 hover:bg-stone-100"
+                  onClick={() => downloadQrCode(confirmedOrder.qrCodeUrl)}
+                  className="rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-100"
                 >
-                  {copiedAccount ? "Copied!" : "Copy"}
+                  Download QR code
                 </button>
               </div>
-              <div>
-                <p className="text-stone-500">Account holder</p>
-                <p className="font-medium text-stone-900">
-                  {BANK_DETAILS.accountHolder}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
