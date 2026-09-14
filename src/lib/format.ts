@@ -9,8 +9,14 @@ export function formatIDR(amount: number): string {
 // "Rp 111,111.00" — comma thousands separator, dot decimal, 2 decimal
 // places, as opposed to formatIDR's whole-rupiah id-ID formatting.
 export function formatIDRDecimal(amount: number): string {
-  return `Rp ${amount.toLocaleString("en-US", {
+  return `Rp ${formatDecimal(amount)}`;
+}
+
+// "111,111.00" — same comma/dot formatting as formatIDRDecimal, without
+// the "Rp" prefix, for use next to a separate "Rp/unit" label.
+export function formatDecimal(amount: number): string {
+  return amount.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  });
 }

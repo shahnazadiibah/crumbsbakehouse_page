@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { formatIDRDecimal } from "@/lib/format";
+import { formatDecimal } from "@/lib/format";
 
 interface MenuItem {
   id: string;
@@ -143,9 +143,10 @@ export default function RecipeEditor({
                   title="Cost per unit"
                   className="w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-600"
                 />
-                <p className="mt-0.5 text-right text-[11px] text-stone-400">
-                  {formatIDRDecimal(costs[item.id] ?? 0)}
-                </p>
+                <div className="mt-0.5 flex justify-between text-[11px] text-stone-400">
+                  <span>Rp/{item.unit || "unit"}</span>
+                  <span>{formatDecimal(costs[item.id] ?? 0)}</span>
+                </div>
               </div>
             </div>
           </div>
