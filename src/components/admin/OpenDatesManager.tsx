@@ -1,86 +1,125 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import {
   addOpenBatchDate,
   removeOpenBatchDate,
 } from "@/app/actions/admin-batch-dates";
 
-function formatLabel(date: string) {
-  return new Date(date + "T00:00:00Z").toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+function toDateString(y: number, m: number, d: number): string {
+  return `${y}-${pad(m + 1)}-${pad(d)}`;
+}
+
+function todayDateString(): string {
+  const now = new Date();
+  return toDateString(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
 export default function OpenDatesManager({ dates }: { dates: string[] }) {
-  const [newDate, setNewDate] = useState("");
+  const openDates = useMemo(() => new Set(dates), [dates]);
   const [isPending, startTransition] = useTransition();
+  const [pendingDate, setPendingDate] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const sorted = [...dates].sort();
+  const today = new Date();
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+
+  const firstOfMonth = new Date(viewYear, viewMonth, 1);
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const leadingBlanks = firstOfMonth.getDay();
+  const todayStr = todayDateString();
+
+  const cells: (string | null)[] = [
+    ...Array(leadingBlanks).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) =>
+      toDateString(viewYear, viewMonth, i + 1)
+    ),
+  ];
+
+  function toggle(date: string) {
+    setError(null);
+    setPendingDate(date);
+    startTransition(async () => {
+      const result = openDates.has(date)
+        ? await removeOpenBatchDate(date)
+        : await addOpenBatchDate(date);
+      if (!result.ok) setError(result.error ?? "Could not update that date.");
+      setPendingDate(null);
+    });
+  }
+
+  function goToMonth(delta: number) {
+    const next = new Date(viewYear, viewMonth + delta, 1);
+    setViewYear(next.getFullYear());
+    setViewMonth(next.getMonth());
+  }
 
   return (
     <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
-      <div className="flex items-center gap-2">
-        <input
-          type="date"
-          value={newDate}
-          onChange={(e) => setNewDate(e.target.value)}
-          className="rounded-lg border border-stone-300 p-2 text-sm text-stone-900"
-        />
+      <div className="flex items-center justify-between">
         <button
           type="button"
-          disabled={isPending || !newDate}
-          onClick={() =>
-            startTransition(async () => {
-              setError(null);
-              const result = await addOpenBatchDate(newDate);
-              if (!result.ok) {
-                setError(result.error ?? "Could not add date.");
-                return;
-              }
-              setNewDate("");
-            })
-          }
-          className="rounded-lg bg-brand-olive px-3 py-2 text-xs font-semibold text-white hover:bg-brand-olive-dark disabled:opacity-50"
+          onClick={() => goToMonth(-1)}
+          className="rounded-lg border border-stone-300 px-2 py-1 text-sm text-stone-600 hover:bg-stone-100"
         >
-          Open for pre-order
+          ‹
+        </button>
+        <p className="text-sm font-semibold text-stone-900">
+          {firstOfMonth.toLocaleDateString("en-GB", {
+            month: "long",
+            year: "numeric",
+          })}
+        </p>
+        <button
+          type="button"
+          onClick={() => goToMonth(1)}
+          className="rounded-lg border border-stone-300 px-2 py-1 text-sm text-stone-600 hover:bg-stone-100"
+        >
+          ›
         </button>
       </div>
-      {error && <p className="text-sm text-red-700">{error}</p>}
 
-      {sorted.length === 0 ? (
-        <p className="text-sm text-stone-500">
-          No dates are open for pre-order yet.
-        </p>
-      ) : (
-        <ul className="divide-y divide-stone-100">
-          {sorted.map((date) => (
-            <li
+      <div className="grid grid-cols-7 gap-1 text-center text-xs">
+        {WEEKDAY_LABELS.map((w) => (
+          <div key={w} className="py-1 font-semibold text-stone-400">
+            {w}
+          </div>
+        ))}
+        {cells.map((date, i) =>
+          date === null ? (
+            <div key={i} />
+          ) : (
+            <button
               key={date}
-              className="flex items-center justify-between py-2 text-sm"
+              type="button"
+              disabled={isPending}
+              onClick={() => toggle(date)}
+              className={`aspect-square rounded-lg text-sm transition-colors disabled:opacity-50 ${
+                openDates.has(date)
+                  ? "bg-brand-olive font-semibold text-white hover:bg-brand-olive-dark"
+                  : "text-stone-700 hover:bg-stone-100"
+              } ${date === todayStr ? "ring-2 ring-brand-olive/50" : ""} ${
+                pendingDate === date ? "animate-pulse" : ""
+              }`}
             >
-              <span className="text-stone-700">{formatLabel(date)}</span>
-              <button
-                type="button"
-                disabled={isPending}
-                onClick={() =>
-                  startTransition(() => {
-                    removeOpenBatchDate(date);
-                  })
-                }
-                className="text-red-600 hover:underline"
-              >
-                Close
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+              {Number(date.slice(-2))}
+            </button>
+          )
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 text-xs text-stone-500">
+        <span className="inline-block h-3 w-3 rounded bg-brand-olive" />
+        Open for pre-order — click a date to open/close it
+      </div>
+      {error && <p className="text-sm text-red-700">{error}</p>}
     </div>
   );
 }
