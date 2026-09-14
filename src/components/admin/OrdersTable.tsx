@@ -116,7 +116,15 @@ export default function OrdersTable({
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <a
+          href={`/admin/print-labels?batch=${batchDate}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100"
+        >
+          Print delivery labels
+        </a>
         <button
           onClick={() => exportOrders(orders, batchDate)}
           className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100"
