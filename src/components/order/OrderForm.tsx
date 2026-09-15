@@ -5,7 +5,7 @@ import { submitOrder } from "@/app/actions/orders";
 import { formatIDR } from "@/lib/format";
 import DatePickerCalendar from "@/components/order/DatePickerCalendar";
 import {
-  isMandatoryWholeCakeZone,
+  isAllowedWholeCakeZone,
   isSameDayBikeZone,
   isWholeCakeItem,
   requiresPickupTime,
@@ -175,11 +175,16 @@ export default function OrderForm({
   const hasWholeCake = menuItems.some(
     (item) => (quantities[item.id] ?? 0) > 0 && isWholeCakeItem(item.name)
   );
-  const mandatoryZone = deliveryZones.find((z) =>
-    isMandatoryWholeCakeZone(z.name)
+  const allowedWholeCakeZones = deliveryZones.filter((z) =>
+    isAllowedWholeCakeZone(z.name)
+  );
+  const currentZoneAllowed = allowedWholeCakeZones.some(
+    (z) => z.id === zoneId
   );
   const effectiveZoneId =
-    hasWholeCake && mandatoryZone ? mandatoryZone.id : zoneId;
+    hasWholeCake && !currentZoneAllowed
+      ? (allowedWholeCakeZones[0]?.id ?? zoneId)
+      : zoneId;
 
   const selectedZone = deliveryZones.find((z) => z.id === effectiveZoneId);
   const deliveryFee = selectedZone?.fee ?? 0;
@@ -566,13 +571,14 @@ export default function OrderForm({
         </h2>
         {hasWholeCake && (
           <p className="mb-2 rounded-lg bg-brand-cream p-3 text-sm text-stone-700">
-            Whole cake orders require Grab Instant Car delivery to arrive
-            undamaged, so it&apos;s selected automatically below.
+            Whole cakes need careful handling in transit, so only Grab
+            Instant Car, Self Order Delivery Services, or Self Pick Up are
+            available below.
           </p>
         )}
         <div className="space-y-2">
           {deliveryZones.map((zone) => {
-            const disabled = hasWholeCake && zone.id !== mandatoryZone?.id;
+            const disabled = hasWholeCake && !isAllowedWholeCakeZone(zone.name);
             return (
               <label
                 key={zone.id}

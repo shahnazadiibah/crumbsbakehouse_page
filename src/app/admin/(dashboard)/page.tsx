@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import BatchDateFilter from "@/components/admin/BatchDateFilter";
 import OrdersTable from "@/components/admin/OrdersTable";
 import OpenDatesManager from "@/components/admin/OpenDatesManager";
+import AddOrderForm from "@/components/admin/AddOrderForm";
+import AdminNotepad from "@/components/admin/AdminNotepad";
 
 export const dynamic = "force-dynamic";
 
@@ -17,17 +19,22 @@ export default async function AdminOrdersPage({
   // query for just the batch dates followed by a second query for the
   // selected date's rows — with order volume this small, one round trip
   // for everything is cheaper than two sequential ones.
-  const [{ data: allOrders }, { data: openBatchDates }, { data: menuItems }] =
-    await Promise.all([
-      supabase
-        .from("orders")
-        .select(
-          "id, customer_name, contact, batch_date, items, delivery_fee, items_total, grand_total, paid, status, notes, greeting_card, delivery_name, delivery_phone, delivery_address, pickup_time, created_at"
-        )
-        .order("created_at"),
-      supabase.from("open_batch_dates").select("date"),
-      supabase.from("menu_items").select("id, name, price").order("name"),
-    ]);
+  const [
+    { data: allOrders },
+    { data: openBatchDates },
+    { data: menuItems },
+    { data: adminNotes },
+  ] = await Promise.all([
+    supabase
+      .from("orders")
+      .select(
+        "id, customer_name, contact, batch_date, items, delivery_fee, items_total, grand_total, paid, status, notes, greeting_card, delivery_name, delivery_phone, delivery_address, pickup_time, created_at"
+      )
+      .order("created_at"),
+    supabase.from("open_batch_dates").select("date").order("date"),
+    supabase.from("menu_items").select("id, name, price").order("name"),
+    supabase.from("admin_notes").select("content").eq("id", "main").maybeSingle(),
+  ]);
 
   const dates = Array.from(
     new Set((allOrders ?? []).map((r) => r.batch_date))
@@ -65,17 +72,27 @@ export default async function AdminOrdersPage({
         />
       </section>
 
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-stone-900">Orders</h1>
-        {dates.length > 0 && (
-          <BatchDateFilter
-            minDate={minDate}
-            maxDate={maxDate}
-            from={rangeFrom}
-            to={rangeTo}
-            basePath="/admin"
-          />
-        )}
+      <AdminNotepad initialContent={adminNotes?.content ?? ""} />
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-semibold text-stone-900">Orders</h1>
+          <div className="flex items-center gap-2">
+            {dates.length > 0 && (
+              <BatchDateFilter
+                minDate={minDate}
+                maxDate={maxDate}
+                from={rangeFrom}
+                to={rangeTo}
+                basePath="/admin"
+              />
+            )}
+          </div>
+        </div>
+        <AddOrderForm
+          batchDates={(openBatchDates ?? []).map((d) => d.date)}
+          menuItems={menuItems ?? []}
+        />
       </div>
 
       {dates.length === 0 ? (

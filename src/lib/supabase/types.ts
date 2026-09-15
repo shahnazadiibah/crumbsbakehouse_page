@@ -230,6 +230,20 @@ export interface Database {
           }
         ];
       };
+      admin_notes: {
+        Row: {
+          id: string;
+          content: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          content?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["admin_notes"]["Insert"]>;
+        Relationships: [];
+      };
       batch_history: {
         Row: {
           id: string;

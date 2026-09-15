@@ -12,6 +12,18 @@ export function isMandatoryWholeCakeZone(zoneName: string): boolean {
   return zoneName.toLowerCase().includes("whole cake");
 }
 
+// Besides the dedicated whole-cake zone, self-arranged delivery is also
+// safe for whole cakes since the customer (or the bakery itself, for
+// pick-up) handles transport directly rather than a third-party rider.
+export function isAllowedWholeCakeZone(zoneName: string): boolean {
+  const name = zoneName.toLowerCase();
+  return (
+    isMandatoryWholeCakeZone(zoneName) ||
+    name.includes("self order") ||
+    name.includes("self pick up")
+  );
+}
+
 // Same-day Grab Bike has a wider delivery window than the other options,
 // so the order page shows a heads-up note when it's selected. Matched by
 // substring so it still works if the zone gets re-seeded.

@@ -80,6 +80,77 @@ export async function updateOrderNotes(orderId: string, notes: string) {
   return { ok: true };
 }
 
+// Minimal order creation for orders taken outside the customer form (e.g.
+// by phone/WhatsApp) — no delivery zone/address, admin fills those in
+// later via "Edit items" if needed. Prices are re-read from menu_items
+// rather than trusted from the client, same as the customer-facing
+// submitOrder action.
+export async function createAdminOrder(input: {
+  customerName: string;
+  contact: string;
+  batchDate: string;
+  items: { menuItemId: string; qty: number }[];
+}) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const customerName = input.customerName.trim();
+  const contact = input.contact.trim();
+  if (!customerName || !contact) {
+    return { ok: false, error: "Please provide a customer name and contact." };
+  }
+
+  const selectedItems = input.items.filter((i) => i.qty > 0);
+  if (selectedItems.length === 0) {
+    return { ok: false, error: "Please select at least one item." };
+  }
+
+  const { data: menuItems, error: menuError } = await supabase
+    .from("menu_items")
+    .select("id, name, price")
+    .in(
+      "id",
+      selectedItems.map((i) => i.menuItemId)
+    );
+
+  if (menuError || !menuItems) {
+    return { ok: false, error: "Could not load menu. Please try again." };
+  }
+
+  const items: OrderItem[] = [];
+  for (const sel of selectedItems) {
+    const menuItem = menuItems.find((m) => m.id === sel.menuItemId);
+    if (!menuItem) {
+      return { ok: false, error: "One of the selected items is invalid." };
+    }
+    items.push({
+      menu_item_id: menuItem.id,
+      name: menuItem.name,
+      price: menuItem.price,
+      qty: sel.qty,
+    });
+  }
+
+  const items_total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+  const { error: insertError } = await supabase.from("orders").insert({
+    customer_name: customerName,
+    contact,
+    batch_date: input.batchDate,
+    items,
+    delivery_fee: 0,
+    items_total,
+    grand_total: items_total,
+  });
+
+  if (insertError) {
+    return { ok: false, error: insertError.message };
+  }
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
 export async function deleteOrder(orderId: string) {
   await requireAdmin();
   const supabase = await createClient();

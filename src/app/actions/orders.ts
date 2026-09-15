@@ -3,7 +3,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isWithinLeadTime } from "@/lib/batchDates";
 import {
-  isMandatoryWholeCakeZone,
+  isAllowedWholeCakeZone,
   isWholeCakeItem,
   requiresPickupTime,
 } from "@/lib/menuRules";
@@ -130,11 +130,11 @@ export async function submitOrder(
 
   const hasWholeCake = items.some((i) => isWholeCakeItem(i.name));
   if (hasWholeCake) {
-    if (!selectedZone || !isMandatoryWholeCakeZone(selectedZone.name)) {
+    if (!selectedZone || !isAllowedWholeCakeZone(selectedZone.name)) {
       return {
         ok: false,
         error:
-          "Whole cake orders must use the Grab Instant Car delivery option. Please reselect it.",
+          "Whole cake orders can only use Grab Instant Car, Self Order Delivery Services, or Self Pick Up. Please reselect one of those.",
       };
     }
   }
