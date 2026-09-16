@@ -72,8 +72,6 @@ export default async function AdminOrdersPage({
         />
       </section>
 
-      <AdminNotepad initialContent={adminNotes?.content ?? ""} />
-
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-xl font-semibold text-stone-900">Orders</h1>
@@ -107,6 +105,8 @@ export default async function AdminOrdersPage({
           menuItems={menuItems ?? []}
         />
       )}
+
+      <AdminNotepad initialContent={adminNotes?.content ?? ""} />
     </div>
   );
 }
