@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import {
   deleteOrder,
+  setOrderBatchDate,
   setOrderPaid,
   setOrderStatus,
   updateOrderItems,
@@ -22,6 +23,7 @@ interface OrderRow {
   id: string;
   customer_name: string;
   contact: string;
+  batch_date: string;
   items: OrderItem[];
   delivery_fee: number;
   items_total: number;
@@ -42,6 +44,7 @@ function exportOrders(orders: OrderRow[], rangeFrom: string, rangeTo: string) {
   const headers = [
     "Customer name",
     "Contact",
+    "Batch date",
     "Delivery name",
     "Delivery phone",
     "Delivery address",
@@ -59,6 +62,7 @@ function exportOrders(orders: OrderRow[], rangeFrom: string, rangeTo: string) {
   const rows = orders.map((order) => [
     order.customer_name,
     order.contact,
+    order.batch_date,
     order.delivery_name ?? "",
     order.delivery_phone ?? "",
     order.delivery_address ?? "",
@@ -152,6 +156,7 @@ export default function OrdersTable({
           <thead className="border-b border-stone-200 bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-500">
             <tr>
               <th className="px-4 py-3">Customer</th>
+              <th className="px-4 py-3">Delivery date</th>
               <th className="px-4 py-3">Deliver to</th>
               <th className="px-4 py-3">Items</th>
               <th className="px-4 py-3">Total</th>
@@ -169,6 +174,19 @@ export default function OrdersTable({
                     {order.customer_name}
                   </p>
                   <p className="text-stone-500">{order.contact}</p>
+                </td>
+                <td className="px-4 py-3 align-top">
+                  <input
+                    type="date"
+                    value={order.batch_date}
+                    disabled={isPending}
+                    onChange={(e) =>
+                      startTransition(() => {
+                        setOrderBatchDate(order.id, e.target.value);
+                      })
+                    }
+                    className="rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900"
+                  />
                 </td>
                 <td className="px-4 py-3 align-top">
                   <p className="font-medium text-stone-900">

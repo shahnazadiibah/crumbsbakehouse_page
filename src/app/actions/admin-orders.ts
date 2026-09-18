@@ -22,6 +22,23 @@ export async function setOrderPaid(orderId: string, paid: boolean) {
   return { ok: true };
 }
 
+export async function setOrderBatchDate(orderId: string, batchDate: string) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("orders")
+    .update({ batch_date: batchDate })
+    .eq("id", orderId);
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
 export async function setOrderStatus(orderId: string, status: OrderStatus) {
   await requireAdmin();
   const supabase = await createClient();
