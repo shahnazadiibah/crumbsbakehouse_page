@@ -15,7 +15,7 @@ const LINKS = [
   {
     label: "Order Here!",
     sublabel: null,
-    href: "/",
+    href: "/order",
     external: false,
   },
   {
