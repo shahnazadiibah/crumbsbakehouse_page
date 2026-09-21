@@ -20,6 +20,7 @@ import {
   updatePackagingUnit,
 } from "@/app/actions/admin-packaging";
 import { updateMenuItemPrice } from "@/app/actions/admin-menu-items";
+import MenuItemsManager from "@/components/admin/MenuItemsManager";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,12 @@ export default async function RecipesPage() {
       .from("packaging_items")
       .select("id, name, unit, cost_per_unit, stock, brand_supplier, remark")
       .order("name"),
-    supabase.from("menu_items").select("id, name, price").order("name"),
+    supabase
+      .from("menu_items")
+      .select(
+        "id, name, price, description, size_label, allergens, image_url"
+      )
+      .order("name"),
     supabase
       .from("recipes")
       .select("menu_item_id, ingredient_id, qty_per_unit"),
@@ -108,6 +114,21 @@ export default async function RecipesPage() {
             return updateMenuItemPrice(menuItemId, price);
           }}
         />
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-stone-900">
+          Pricelist content
+        </h2>
+        <p className="text-sm text-stone-500">
+          Description, size/format, allergens, and a photo URL for each item
+          on the public{" "}
+          <a href="/pricelist" target="_blank" className="underline">
+            /pricelist
+          </a>{" "}
+          page. Saves on blur.
+        </p>
+        <MenuItemsManager items={menuItems ?? []} />
       </section>
 
       <section className="space-y-3">

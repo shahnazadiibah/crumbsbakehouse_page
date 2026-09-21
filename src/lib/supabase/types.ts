@@ -21,6 +21,10 @@ export interface Database {
           name: string;
           price: number;
           active: boolean;
+          description: string | null;
+          size_label: string | null;
+          allergens: string | null;
+          image_url: string | null;
           created_at: string;
         };
         Insert: {
@@ -28,6 +32,10 @@ export interface Database {
           name: string;
           price: number;
           active?: boolean;
+          description?: string | null;
+          size_label?: string | null;
+          allergens?: string | null;
+          image_url?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["menu_items"]["Insert"]>;

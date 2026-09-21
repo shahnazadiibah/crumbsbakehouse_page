@@ -44,8 +44,8 @@ export function requiresPickupTime(zoneName: string): boolean {
 // silently dropped.
 export function getProductFamily(itemName: string): string {
   const name = itemName.toLowerCase();
-  if (name.includes("banana bread")) return "Banana Bread";
-  if (name.includes("carrot cake")) return "Carrot Cake";
+  if (name.includes("banana")) return "Banana Bread";
+  if (name.includes("carrot")) return "Carrot Cake";
   if (name.includes("tres leches")) return "Tres Leches Cake";
   return itemName;
 }

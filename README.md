@@ -24,6 +24,9 @@ dashboard.
       adds the `greeting_card` column to `orders`.
    4. [`supabase/add_admin_notes.sql`](supabase/add_admin_notes.sql) — adds
       the `admin_notes` table backing the notepad on the Orders tab.
+   5. [`supabase/add_menu_item_details.sql`](supabase/add_menu_item_details.sql) —
+      adds `description`/`size_label`/`allergens`/`image_url` to
+      `menu_items`, used by the `/pricelist` page.
 3. **Upload your QRIS image** — in Supabase Storage, upload your static QRIS
    code image to the `payment-assets` bucket as `qris.png`. Must be a static
    merchant QRIS (no fixed amount, no expiry) — a one-time/dynamic QR will

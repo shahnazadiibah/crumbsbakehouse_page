@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { DM_Sans, Geist, Geist_Mono, League_Spartan } from "next/font/google";
+import {
+  Caveat,
+  DM_Sans,
+  Geist,
+  Geist_Mono,
+  League_Spartan,
+  Playfair_Display,
+} from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,6 +29,16 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
 });
 
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair-display",
+  subsets: ["latin"],
+});
+
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Crumbs Bakehouse — Pre-order",
   description: "Weekly Saturday pre-order for Crumbs Bakehouse.",
@@ -35,7 +52,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${leagueSpartan.variable} ${dmSans.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${leagueSpartan.variable} ${dmSans.variable} ${playfairDisplay.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
