@@ -4,8 +4,12 @@ import { useState, useTransition } from "react";
 import { updateAdminNotes } from "@/app/actions/admin-notes";
 
 export default function AdminNotepad({
+  noteId,
+  path,
   initialContent,
 }: {
+  noteId: string;
+  path: string;
   initialContent: string;
 }) {
   const [content, setContent] = useState(initialContent);
@@ -15,7 +19,7 @@ export default function AdminNotepad({
   function save() {
     if (content === initialContent) return;
     startTransition(async () => {
-      await updateAdminNotes(content);
+      await updateAdminNotes(noteId, content, path);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });

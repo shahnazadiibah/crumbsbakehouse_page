@@ -106,7 +106,11 @@ export default async function AdminOrdersPage({
         />
       )}
 
-      <AdminNotepad initialContent={adminNotes?.content ?? ""} />
+      <AdminNotepad
+        noteId="main"
+        path="/admin"
+        initialContent={adminNotes?.content ?? ""}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import BatchDateMultiFilter from "@/components/admin/BatchDateMultiFilter";
 import IngredientsManager from "@/components/admin/IngredientsManager";
 import PackagingManager from "@/components/admin/PackagingManager";
+import AdminNotepad from "@/components/admin/AdminNotepad";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export default async function InventoryPage({
     { data: packagingRecipes },
     { data: allOrders },
     { data: closedBatches },
+    { data: adminNotes },
   ] = await Promise.all([
     supabase
       .from("ingredients")
@@ -37,6 +39,11 @@ export default async function InventoryPage({
       .select("menu_item_id, packaging_item_id, qty_per_unit"),
     supabase.from("orders").select("batch_date, items").order("batch_date"),
     supabase.from("batch_history").select("batch_date"),
+    supabase
+      .from("admin_notes")
+      .select("content")
+      .eq("id", "inventory")
+      .maybeSingle(),
   ]);
 
   const closedDates = new Set((closedBatches ?? []).map((b) => b.batch_date));
@@ -111,6 +118,12 @@ export default async function InventoryPage({
 
   return (
     <div className="space-y-8">
+      <AdminNotepad
+        noteId="inventory"
+        path="/admin/inventory"
+        initialContent={adminNotes?.content ?? ""}
+      />
+
       <div className="flex items-center justify-between">
         <p className="text-sm text-stone-500">
           &quot;Needed for batch&quot; and &quot;To buy&quot; are calculated
