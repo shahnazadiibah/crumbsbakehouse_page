@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { updateMenuItemDetails } from "@/app/actions/admin-menu-items";
+import {
+  updateMenuItemDetails,
+  updateMenuItemPrice,
+} from "@/app/actions/admin-menu-items";
 
 interface MenuItem {
   id: string;
   name: string;
+  price: number;
   description: string | null;
   size_label: string | null;
   allergens: string | null;
@@ -28,6 +32,13 @@ export default function MenuItemsManager({ items }: { items: MenuItem[] }) {
     }));
   }
 
+  function setPrice(id: string, value: number) {
+    setDrafts((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], price: value },
+    }));
+  }
+
   async function save(id: string) {
     const draft = drafts[id];
     setPendingId(id);
@@ -38,6 +49,12 @@ export default function MenuItemsManager({ items }: { items: MenuItem[] }) {
       allergens: draft.allergens ?? "",
       imageUrl: draft.image_url ?? "",
     });
+    setPendingId(null);
+  }
+
+  async function savePrice(id: string) {
+    setPendingId(id);
+    await updateMenuItemPrice(id, drafts[id].price);
     setPendingId(null);
   }
 
@@ -62,6 +79,28 @@ export default function MenuItemsManager({ items }: { items: MenuItem[] }) {
                 onBlur={() => save(item.id)}
                 className={fieldInputClass}
               />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-stone-500">
+                Price
+              </label>
+              <div className="relative">
+                <span className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-sm text-stone-400">
+                  Rp
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  step="any"
+                  value={draft.price}
+                  disabled={disabled}
+                  onChange={(e) =>
+                    setPrice(item.id, Number(e.target.value))
+                  }
+                  onBlur={() => savePrice(item.id)}
+                  className={`${fieldInputClass} pl-8`}
+                />
+              </div>
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-stone-500">

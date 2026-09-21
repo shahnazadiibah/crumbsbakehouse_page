@@ -27,6 +27,8 @@ dashboard.
    5. [`supabase/add_menu_item_details.sql`](supabase/add_menu_item_details.sql) —
       adds `description`/`size_label`/`allergens`/`image_url` to
       `menu_items`, used by the `/pricelist` page.
+   6. [`supabase/add_menu_photos_bucket.sql`](supabase/add_menu_photos_bucket.sql) —
+      creates the `menu-photos` storage bucket for menu item photos.
 3. **Upload your QRIS image** — in Supabase Storage, upload your static QRIS
    code image to the `payment-assets` bucket as `qris.png`. Must be a static
    merchant QRIS (no fixed amount, no expiry) — a one-time/dynamic QR will

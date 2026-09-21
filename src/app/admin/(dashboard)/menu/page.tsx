@@ -19,13 +19,12 @@ export default async function MenuPage() {
         Menu &amp; Pricelist
       </h1>
       <p className="text-sm text-stone-500">
-        Description, size/format, allergens, and a photo URL for each item on
-        the public{" "}
+        Price, description, size/format, allergens, and a photo URL for each
+        item on the public{" "}
         <a href="/pricelist" target="_blank" className="underline">
           /pricelist
         </a>{" "}
-        page. Saves on blur. Price and recipes are still managed from the
-        COGS tab.
+        page. Saves on blur. Recipes are still managed from the COGS tab.
       </p>
       <MenuItemsManager items={menuItems ?? []} />
     </div>

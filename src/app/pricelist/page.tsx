@@ -1,7 +1,17 @@
+import Image from "next/image";
 import { createPublicClient } from "@/lib/supabase/public";
 import { formatIDR } from "@/lib/format";
 
 export const revalidate = 60;
+
+const ITEM_ORDER = [
+  "Strawberry Tres Leches (Whole)",
+  "Strawberry Tres Leches (Slice)",
+  "Carrot Cake (Whole)",
+  "Carrot Cake (Cup)",
+  "Chocolate Banana Bread (Loaf)",
+  "Chocolate Banana Bread (Slice)",
+];
 
 function PhotoPlaceholder() {
   return (
@@ -27,7 +37,7 @@ function PhotoPlaceholder() {
 export default async function PricelistPage() {
   const supabase = createPublicClient();
 
-  const { data: menuItems } = await supabase
+  const { data: rawMenuItems } = await supabase
     .from("menu_items")
     .select(
       "id, name, price, description, size_label, allergens, image_url"
@@ -35,36 +45,42 @@ export default async function PricelistPage() {
     .eq("active", true)
     .order("created_at");
 
+  const menuItems = (rawMenuItems ?? [])
+    .slice()
+    .sort((a, b) => {
+      const ai = ITEM_ORDER.indexOf(a.name);
+      const bi = ITEM_ORDER.indexOf(b.name);
+      if (ai === -1 && bi === -1) return 0;
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+
   return (
     <div className="min-h-screen bg-brand-cream px-4 py-10">
       <div className="mx-auto max-w-2xl">
-        <header className="mb-10 flex items-start justify-between gap-4">
-          <div className="leading-none">
-            <p
-              style={{ fontFamily: "var(--font-playfair-display)" }}
-              className="text-5xl font-black text-brand-olive-dark sm:text-6xl"
-            >
-              Menu
-            </p>
-            <p
-              style={{ fontFamily: "var(--font-caveat)" }}
-              className="-mt-2 ml-8 text-4xl text-brand-olive sm:text-5xl"
-            >
-              &amp; Pricelist
-            </p>
-          </div>
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand-olive text-xs font-semibold text-white sm:h-20 sm:w-20 sm:text-sm">
-            cr.umbs
-          </div>
+        <Image
+          src="/page_header.jpg"
+          alt="Crumbs Bakehouse"
+          width={1875}
+          height={625}
+          className="h-auto w-full rounded-2xl"
+          priority
+        />
+
+        <header className="my-6 text-center">
+          <h1 className="font-heading text-2xl font-bold text-brand-olive sm:text-3xl">
+            Menu &amp; Pricelist
+          </h1>
         </header>
 
-        {(menuItems ?? []).length === 0 ? (
+        {menuItems.length === 0 ? (
           <p className="text-center text-sm text-stone-500">
             No items available right now.
           </p>
         ) : (
           <div className="space-y-10">
-            {(menuItems ?? []).map((item) => (
+            {menuItems.map((item) => (
               <div
                 key={item.id}
                 className="flex items-start justify-between gap-4"
@@ -72,7 +88,7 @@ export default async function PricelistPage() {
                 <div className="min-w-0">
                   <h2
                     style={{ fontFamily: "var(--font-playfair-display)" }}
-                    className="text-xl font-semibold text-stone-900 sm:text-2xl"
+                    className="text-base font-semibold text-stone-700 sm:text-lg"
                   >
                     {item.name}
                   </h2>
@@ -88,7 +104,10 @@ export default async function PricelistPage() {
                         .join(" | ")}
                     </p>
                   )}
-                  <p className="mt-3 text-lg font-semibold text-stone-900">
+                  <p
+                    style={{ fontFamily: "var(--font-playfair-display)" }}
+                    className="mt-3 text-base font-semibold text-stone-500 sm:text-lg"
+                  >
                     {formatIDR(item.price)}
                   </p>
                 </div>
