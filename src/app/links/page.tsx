@@ -13,8 +13,8 @@ const LINKS = [
     external: false,
   },
   {
-    label: "Order Here!",
-    sublabel: null,
+    label: "Pre-Order Here!",
+    sublabel: "Delivery every weekend",
     href: "/order",
     external: false,
   },
@@ -55,11 +55,11 @@ export default function LinksPage() {
               target={link.external ? "_blank" : undefined}
               rel={link.external ? "noopener noreferrer" : undefined}
               style={{ fontFamily: "var(--font-dm-sans)" }}
-              className="block rounded-xl border border-brand-olive/30 bg-white px-4 py-3.5 text-sm font-semibold text-stone-900 shadow-sm transition-colors hover:bg-brand-cream"
+              className="group block rounded-xl border border-brand-olive/30 bg-white px-4 py-3.5 text-sm font-semibold text-stone-900 shadow-sm transition-colors hover:bg-brand-olive hover:text-white"
             >
               {link.label}
               {link.sublabel && (
-                <span className="mt-0.5 block text-xs font-normal text-stone-500">
+                <span className="mt-0.5 block text-xs font-normal text-stone-500 group-hover:text-white/80">
                   {link.sublabel}
                 </span>
               )}
