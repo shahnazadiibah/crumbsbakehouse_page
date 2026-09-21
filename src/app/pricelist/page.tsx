@@ -58,7 +58,7 @@ export default async function PricelistPage() {
 
   return (
     <div className="min-h-screen bg-brand-cream px-4 py-10">
-      <div className="mx-auto max-w-2xl">
+      <header className="mx-auto mb-8 max-w-lg text-center">
         <Image
           src="/page_header.jpg"
           alt="Crumbs Bakehouse"
@@ -67,13 +67,12 @@ export default async function PricelistPage() {
           className="h-auto w-full rounded-2xl"
           priority
         />
+        <h1 className="mt-4 font-heading text-2xl font-bold text-brand-olive">
+          Menu &amp; Pricelist
+        </h1>
+      </header>
 
-        <header className="my-6 text-center">
-          <h1 className="font-heading text-2xl font-bold text-brand-olive sm:text-3xl">
-            Menu &amp; Pricelist
-          </h1>
-        </header>
-
+      <div className="mx-auto max-w-lg">
         {menuItems.length === 0 ? (
           <p className="text-center text-sm text-stone-500">
             No items available right now.
@@ -98,7 +97,7 @@ export default async function PricelistPage() {
                     </p>
                   )}
                   {(item.size_label || item.allergens) && (
-                    <p className="mt-1 text-xs text-stone-400">
+                    <p className="mt-1 text-xs text-stone-500">
                       {[item.size_label, item.allergens]
                         .filter(Boolean)
                         .join(" | ")}
@@ -106,7 +105,7 @@ export default async function PricelistPage() {
                   )}
                   <p
                     style={{ fontFamily: "var(--font-playfair-display)" }}
-                    className="mt-3 text-base font-semibold text-stone-500 sm:text-lg"
+                    className="mt-3 text-base font-semibold text-stone-700 sm:text-lg"
                   >
                     {formatIDR(item.price)}
                   </p>
