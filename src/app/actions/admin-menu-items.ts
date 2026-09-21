@@ -15,6 +15,7 @@ export async function updateMenuItemPrice(id: string, price: number) {
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/recipes");
+  revalidatePath("/admin/menu");
   revalidatePath("/order");
   revalidatePath("/pricelist");
   return { ok: true };
@@ -54,6 +55,7 @@ export async function updateMenuItemDetails(
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/recipes");
+  revalidatePath("/admin/menu");
   revalidatePath("/order");
   revalidatePath("/pricelist");
   return { ok: true };

@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { href: "/admin/bake-list", label: "Baking Guide" },
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/recipes", label: "COGS" },
+  { href: "/admin/menu", label: "Menu & Pricelist" },
   { href: "/admin/batches", label: "Finance" },
 ];
 

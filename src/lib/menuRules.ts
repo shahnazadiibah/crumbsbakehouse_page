@@ -1,11 +1,10 @@
-// Whole cakes need careful handling in transit, so orders containing one
-// are restricted to the delivery zone built for that ("Grab Instant Car").
-// Matching is done by name substring rather than a hardcoded id so it still
-// works if the rows get re-seeded — keep "whole" in the cake's name and
-// "whole cake" in the zone's name if you rename either.
+// Whole cakes (and other whole-item bakes, e.g. "Strawberry Tres Leches
+// (Whole)") need careful handling in transit, so orders containing one are
+// restricted to the delivery zones built for that. Matching is done by name
+// substring rather than a hardcoded id so it still works if the rows get
+// re-seeded or renamed — keep "whole" somewhere in the item's name.
 export function isWholeCakeItem(itemName: string): boolean {
-  const name = itemName.toLowerCase();
-  return name.includes("cake") && name.includes("whole");
+  return itemName.toLowerCase().includes("whole");
 }
 
 export function isMandatoryWholeCakeZone(zoneName: string): boolean {
