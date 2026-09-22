@@ -6,6 +6,7 @@ import {
   setOrderBatchDate,
   setOrderPaid,
   setOrderStatus,
+  updateOrderDeliveryAddress,
   updateOrderItems,
   updateOrderNotes,
 } from "@/app/actions/admin-orders";
@@ -174,6 +175,7 @@ export default function OrdersTable({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editItems, setEditItems] = useState<OrderItem[]>([]);
   const [editNotes, setEditNotes] = useState("");
+  const [editAddress, setEditAddress] = useState("");
   const [addItemId, setAddItemId] = useState(menuItems[0]?.id ?? "");
   const [copiedInvoiceId, setCopiedInvoiceId] = useState<string | null>(null);
 
@@ -268,7 +270,17 @@ export default function OrdersTable({
                     {order.delivery_name ?? "—"}
                   </p>
                   <p className="text-stone-500">{order.delivery_phone}</p>
-                  <p className="text-stone-500">{order.delivery_address}</p>
+                  {editingId === order.id ? (
+                    <textarea
+                      value={editAddress}
+                      onChange={(e) => setEditAddress(e.target.value)}
+                      placeholder="Delivery address"
+                      rows={2}
+                      className="mt-1 w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900"
+                    />
+                  ) : (
+                    <p className="text-stone-500">{order.delivery_address}</p>
+                  )}
                   {order.pickup_time && (
                     <p className="text-stone-500">
                       Pick-up: {order.pickup_time}
@@ -438,6 +450,10 @@ export default function OrdersTable({
                                 order.delivery_fee
                               ),
                               updateOrderNotes(order.id, editNotes),
+                              updateOrderDeliveryAddress(
+                                order.id,
+                                editAddress
+                              ),
                             ]);
                             setEditingId(null);
                           })
@@ -462,6 +478,7 @@ export default function OrdersTable({
                           setEditingId(order.id);
                           setEditItems(order.items);
                           setEditNotes(order.notes ?? "");
+                          setEditAddress(order.delivery_address ?? "");
                         }}
                         className="text-stone-500 hover:text-stone-800"
                       >

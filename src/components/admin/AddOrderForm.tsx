@@ -19,6 +19,7 @@ export default function AddOrderForm({
   const [open, setOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [contact, setContact] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
   const [batchDate, setBatchDate] = useState(batchDates[0] ?? "");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +28,7 @@ export default function AddOrderForm({
   function reset() {
     setCustomerName("");
     setContact("");
+    setDeliveryAddress("");
     setBatchDate(batchDates[0] ?? "");
     setQuantities({});
     setError(null);
@@ -63,6 +65,7 @@ export default function AddOrderForm({
         customerName,
         contact,
         batchDate,
+        deliveryAddress,
         items,
       });
       if (!result.ok) {
@@ -116,6 +119,12 @@ export default function AddOrderForm({
           value={contact}
           onChange={(e) => setContact(e.target.value)}
           className="w-48 rounded-lg border border-stone-300 p-2 text-sm text-stone-900"
+        />
+        <input
+          placeholder="Delivery address (optional)"
+          value={deliveryAddress}
+          onChange={(e) => setDeliveryAddress(e.target.value)}
+          className="w-64 rounded-lg border border-stone-300 p-2 text-sm text-stone-900"
         />
         <select
           value={batchDate}

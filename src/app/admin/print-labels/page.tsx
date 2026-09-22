@@ -7,9 +7,9 @@ const LABELS_PER_PAGE = 10;
 
 function formatBatchLabel(date: string) {
   return new Date(date + "T00:00:00Z").toLocaleDateString("en-GB", {
-    weekday: "long",
+    weekday: "short",
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
     timeZone: "UTC",
   });
@@ -58,7 +58,7 @@ export default async function PrintLabelsPage({
 
       <div className="flex items-center justify-between print:hidden">
         <h1 className="text-xl font-semibold text-stone-900">
-          Delivery labels —{" "}
+          Delivery labels -{" "}
           {from === to
             ? formatBatchLabel(from)
             : `${formatBatchLabel(from)} to ${formatBatchLabel(to)}`}
@@ -104,14 +104,14 @@ export default async function PrintLabelsPage({
                   )}
 
                   {(hasGreetingCard || hasTopper) && (
-                    <div className="mt-1.5 flex flex-wrap gap-1">
+                    <div className="mt-1.5 flex flex-wrap gap-2">
                       {hasGreetingCard && (
-                        <span className="rounded border border-black px-1 py-0.5 font-bold uppercase">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
                           Greeting Card
                         </span>
                       )}
                       {hasTopper && (
-                        <span className="rounded border border-black px-1 py-0.5 font-bold uppercase">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
                           Cake Topper
                         </span>
                       )}

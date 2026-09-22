@@ -81,6 +81,26 @@ export async function updateOrderItems(
   return { ok: true };
 }
 
+export async function updateOrderDeliveryAddress(
+  orderId: string,
+  deliveryAddress: string
+) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("orders")
+    .update({ delivery_address: deliveryAddress.trim() || null })
+    .eq("id", orderId);
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
 export async function updateOrderNotes(orderId: string, notes: string) {
   await requireAdmin();
   const supabase = await createClient();
@@ -107,6 +127,7 @@ export async function createAdminOrder(input: {
   customerName: string;
   contact: string;
   batchDate: string;
+  deliveryAddress: string;
   items: { menuItemId: string; qty: number }[];
 }) {
   await requireAdmin();
@@ -159,6 +180,12 @@ export async function createAdminOrder(input: {
     delivery_fee: 0,
     items_total,
     grand_total: items_total,
+    // The quick-add form doesn't collect a separate delivery name/phone,
+    // so default them to the customer's own details — otherwise these
+    // orders show up with a blank recipient card on the print-labels page.
+    delivery_name: customerName,
+    delivery_phone: contact,
+    delivery_address: input.deliveryAddress.trim() || null,
   });
 
   if (insertError) {
