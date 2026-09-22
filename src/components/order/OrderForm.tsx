@@ -588,7 +588,7 @@ export default function OrderForm({
             const subNote = noteMatch
               ? noteMatch[2]
               : isSameDayBikeZone(zone.name)
-                ? "Delivery time 6-8 hrs from pick up."
+                ? "Arrives within 6–8 hrs"
                 : null;
             return (
               <label
