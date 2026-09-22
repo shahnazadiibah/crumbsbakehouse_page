@@ -122,7 +122,7 @@ export default async function PricelistPage() {
                     <span
                       style={{ fontFamily: "var(--font-playfair-display)" }}
                       className={`text-sm font-semibold sm:text-base ${
-                        onSale ? "text-red-600" : "text-stone-700"
+                        onSale ? "text-[#8f1912]" : "text-stone-700"
                       }`}
                     >
                       {formatIDR(discounted)}
