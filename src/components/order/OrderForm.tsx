@@ -195,9 +195,6 @@ export default function OrderForm({
   const deliveryNeedsConfirmation = selectedZone
     ? zoneNeedsConfirmation(selectedZone.name)
     : false;
-  const showSameDayBikeNote = selectedZone
-    ? isSameDayBikeZone(selectedZone.name)
-    : false;
   const needsPickupTime = selectedZone
     ? requiresPickupTime(selectedZone.name)
     : false;
@@ -588,7 +585,11 @@ export default function OrderForm({
             const cleanName = displayZoneName(zone.name);
             const noteMatch = cleanName.match(/^(.*?)\s*\((.*)\)$/);
             const mainLabel = noteMatch ? noteMatch[1] : cleanName;
-            const subNote = noteMatch ? noteMatch[2] : null;
+            const subNote = noteMatch
+              ? noteMatch[2]
+              : isSameDayBikeZone(zone.name)
+                ? "Delivery time 6-8 hrs from pick up."
+                : null;
             return (
               <label
                 key={zone.id}
@@ -641,11 +642,6 @@ export default function OrderForm({
             The delivery fee for this option isn&apos;t fixed — we&apos;ll
             confirm the exact price with you on WhatsApp. It isn&apos;t
             included in the total below.
-          </p>
-        )}
-        {showSameDayBikeNote && (
-          <p className="mt-2 rounded-lg bg-brand-cream p-3 text-sm text-stone-700">
-            Delivery time 6-8 hrs from pick up.
           </p>
         )}
         {needsPickupTime && (
