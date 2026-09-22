@@ -9,7 +9,7 @@ export default async function MenuPage() {
   const { data: menuItems } = await supabase
     .from("menu_items")
     .select(
-      "id, name, price, description, size_label, allergens, image_url"
+      "id, name, price, discount_percent, description, size_label, allergens, image_url"
     )
     .order("name");
 
@@ -19,8 +19,8 @@ export default async function MenuPage() {
         Menu &amp; Pricelist
       </h1>
       <p className="text-sm text-stone-500">
-        Price, description, size/format, allergens, and a photo URL for each
-        item on the public{" "}
+        Price, discount, description, size/format, allergens, and a photo
+        URL for each item on the public{" "}
         <a href="/pricelist" target="_blank" className="underline">
           /pricelist
         </a>{" "}

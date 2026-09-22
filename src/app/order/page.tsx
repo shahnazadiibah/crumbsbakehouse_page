@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { createPublicClient } from "@/lib/supabase/public";
 import { getSelectableBatchDates } from "@/lib/batchDates";
+import { getDiscountedPrice } from "@/lib/pricing";
 import OrderForm from "@/components/order/OrderForm";
 
 // Menu/delivery-zone/open-date data changes rarely, so a short
@@ -17,7 +18,7 @@ export default async function Home() {
     await Promise.all([
       supabase
         .from("menu_items")
-        .select("id, name, price")
+        .select("id, name, price, discount_percent")
         .eq("active", true)
         .order("created_at"),
       supabase
@@ -53,7 +54,11 @@ export default async function Home() {
       </header>
 
       <OrderForm
-        menuItems={menuItems ?? []}
+        menuItems={(menuItems ?? []).map((item) => ({
+          id: item.id,
+          name: item.name,
+          price: getDiscountedPrice(item.price, item.discount_percent),
+        }))}
         deliveryZones={deliveryZones ?? []}
         batchDates={batchDates}
       />

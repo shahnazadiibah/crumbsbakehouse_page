@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/supabase/requireAdmin";
+import { getDiscountedPrice } from "@/lib/pricing";
 import type { OrderItem, OrderStatus } from "@/lib/supabase/types";
 
 export async function setOrderPaid(orderId: string, paid: boolean) {
@@ -124,7 +125,7 @@ export async function createAdminOrder(input: {
 
   const { data: menuItems, error: menuError } = await supabase
     .from("menu_items")
-    .select("id, name, price")
+    .select("id, name, price, discount_percent")
     .in(
       "id",
       selectedItems.map((i) => i.menuItemId)
@@ -143,7 +144,7 @@ export async function createAdminOrder(input: {
     items.push({
       menu_item_id: menuItem.id,
       name: menuItem.name,
-      price: menuItem.price,
+      price: getDiscountedPrice(menuItem.price, menuItem.discount_percent),
       qty: sel.qty,
     });
   }

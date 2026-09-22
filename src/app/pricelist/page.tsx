@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { createPublicClient } from "@/lib/supabase/public";
 import { formatIDR } from "@/lib/format";
+import { getDiscountedPrice } from "@/lib/pricing";
 
 export const revalidate = 60;
 
@@ -40,7 +41,7 @@ export default async function PricelistPage() {
   const { data: rawMenuItems } = await supabase
     .from("menu_items")
     .select(
-      "id, name, price, description, size_label, allergens, image_url"
+      "id, name, price, discount_percent, description, size_label, allergens, image_url"
     )
     .eq("active", true)
     .order("created_at");
@@ -79,7 +80,13 @@ export default async function PricelistPage() {
           </p>
         ) : (
           <div className="space-y-4">
-            {menuItems.map((item) => (
+            {menuItems.map((item) => {
+              const discounted = getDiscountedPrice(
+                item.price,
+                item.discount_percent
+              );
+              const onSale = item.discount_percent > 0;
+              return (
               <div
                 key={item.id}
                 className="flex items-start justify-between gap-4 rounded-2xl border border-brand-olive/30 bg-white p-4 shadow-sm"
@@ -103,11 +110,23 @@ export default async function PricelistPage() {
                         .join(" | ")}
                     </p>
                   )}
-                  <p
-                    style={{ fontFamily: "var(--font-playfair-display)" }}
-                    className="mt-3 text-sm font-semibold text-stone-700 sm:text-base"
-                  >
-                    {formatIDR(item.price)}
+                  <p className="mt-3 flex items-baseline gap-2">
+                    {onSale && (
+                      <span
+                        style={{ fontFamily: "var(--font-playfair-display)" }}
+                        className="text-xs text-stone-400 line-through"
+                      >
+                        {formatIDR(item.price)}
+                      </span>
+                    )}
+                    <span
+                      style={{ fontFamily: "var(--font-playfair-display)" }}
+                      className={`text-sm font-semibold sm:text-base ${
+                        onSale ? "text-red-600" : "text-stone-700"
+                      }`}
+                    >
+                      {formatIDR(discounted)}
+                    </span>
                   </p>
                 </div>
 
@@ -122,7 +141,8 @@ export default async function PricelistPage() {
                   <PhotoPlaceholder />
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

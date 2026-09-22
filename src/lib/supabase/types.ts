@@ -25,6 +25,7 @@ export interface Database {
           size_label: string | null;
           allergens: string | null;
           image_url: string | null;
+          discount_percent: number;
           created_at: string;
         };
         Insert: {
@@ -36,6 +37,7 @@ export interface Database {
           size_label?: string | null;
           allergens?: string | null;
           image_url?: string | null;
+          discount_percent?: number;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["menu_items"]["Insert"]>;

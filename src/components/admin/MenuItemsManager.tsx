@@ -3,13 +3,17 @@
 import { useState } from "react";
 import {
   updateMenuItemDetails,
+  updateMenuItemDiscount,
   updateMenuItemPrice,
 } from "@/app/actions/admin-menu-items";
+import { getDiscountedPrice } from "@/lib/pricing";
+import { formatIDR } from "@/lib/format";
 
 interface MenuItem {
   id: string;
   name: string;
   price: number;
+  discount_percent: number;
   description: string | null;
   size_label: string | null;
   allergens: string | null;
@@ -39,6 +43,13 @@ export default function MenuItemsManager({ items }: { items: MenuItem[] }) {
     }));
   }
 
+  function setDiscount(id: string, value: number) {
+    setDrafts((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], discount_percent: value },
+    }));
+  }
+
   async function save(id: string) {
     const draft = drafts[id];
     setPendingId(id);
@@ -55,6 +66,12 @@ export default function MenuItemsManager({ items }: { items: MenuItem[] }) {
   async function savePrice(id: string) {
     setPendingId(id);
     await updateMenuItemPrice(id, drafts[id].price);
+    setPendingId(null);
+  }
+
+  async function saveDiscount(id: string) {
+    setPendingId(id);
+    await updateMenuItemDiscount(id, drafts[id].discount_percent);
     setPendingId(null);
   }
 
@@ -101,6 +118,37 @@ export default function MenuItemsManager({ items }: { items: MenuItem[] }) {
                   className={`${fieldInputClass} pl-8`}
                 />
               </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-stone-500">
+                Discount %
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step="any"
+                  value={draft.discount_percent}
+                  disabled={disabled}
+                  onChange={(e) =>
+                    setDiscount(item.id, Number(e.target.value))
+                  }
+                  onBlur={() => saveDiscount(item.id)}
+                  className={`${fieldInputClass} pr-8`}
+                />
+                <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-sm text-stone-400">
+                  %
+                </span>
+              </div>
+              {draft.discount_percent > 0 && (
+                <p className="mt-1 text-xs text-stone-500">
+                  Sale price:{" "}
+                  {formatIDR(
+                    getDiscountedPrice(draft.price, draft.discount_percent)
+                  )}
+                </p>
+              )}
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-stone-500">

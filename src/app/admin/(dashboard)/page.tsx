@@ -4,6 +4,7 @@ import OrdersTable from "@/components/admin/OrdersTable";
 import OpenDatesManager from "@/components/admin/OpenDatesManager";
 import AddOrderForm from "@/components/admin/AddOrderForm";
 import AdminNotepad from "@/components/admin/AdminNotepad";
+import { getDiscountedPrice } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -32,9 +33,18 @@ export default async function AdminOrdersPage({
       )
       .order("created_at"),
     supabase.from("open_batch_dates").select("date").order("date"),
-    supabase.from("menu_items").select("id, name, price").order("name"),
+    supabase
+      .from("menu_items")
+      .select("id, name, price, discount_percent")
+      .order("name"),
     supabase.from("admin_notes").select("content").eq("id", "main").maybeSingle(),
   ]);
+
+  const effectiveMenuItems = (menuItems ?? []).map((item) => ({
+    id: item.id,
+    name: item.name,
+    price: getDiscountedPrice(item.price, item.discount_percent),
+  }));
 
   const dates = Array.from(
     new Set((allOrders ?? []).map((r) => r.batch_date))
@@ -89,7 +99,7 @@ export default async function AdminOrdersPage({
         </div>
         <AddOrderForm
           batchDates={(openBatchDates ?? []).map((d) => d.date)}
-          menuItems={menuItems ?? []}
+          menuItems={effectiveMenuItems}
         />
       </div>
 
@@ -102,7 +112,7 @@ export default async function AdminOrdersPage({
           orders={orders}
           rangeFrom={rangeFrom}
           rangeTo={rangeTo}
-          menuItems={menuItems ?? []}
+          menuItems={effectiveMenuItems}
         />
       )}
 

@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isWithinLeadTime } from "@/lib/batchDates";
+import { getDiscountedPrice } from "@/lib/pricing";
 import {
   isAllowedWholeCakeZone,
   isWholeCakeItem,
@@ -84,7 +85,7 @@ export async function submitOrder(
   ] = await Promise.all([
     supabase
       .from("menu_items")
-      .select("id, name, price, active")
+      .select("id, name, price, discount_percent, active")
       .in("id", menuItemIds),
     supabase.from("delivery_zones").select("id, name, fee"),
     supabase
@@ -120,7 +121,7 @@ export async function submitOrder(
     items.push({
       menu_item_id: menuItem.id,
       name: menuItem.name,
-      price: menuItem.price,
+      price: getDiscountedPrice(menuItem.price, menuItem.discount_percent),
       qty: sel.qty,
       ...(topper && isWholeCakeItem(menuItem.name) ? { topper } : {}),
     });
