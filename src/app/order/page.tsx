@@ -58,6 +58,7 @@ export default async function Home() {
           id: item.id,
           name: item.name,
           price: getDiscountedPrice(item.price, item.discount_percent),
+          originalPrice: item.discount_percent > 0 ? item.price : null,
         }))}
         deliveryZones={deliveryZones ?? []}
         batchDates={batchDates}

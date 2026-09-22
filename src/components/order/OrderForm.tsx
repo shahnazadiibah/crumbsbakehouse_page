@@ -18,6 +18,7 @@ interface MenuItem {
   id: string;
   name: string;
   price: number;
+  originalPrice?: number | null;
 }
 
 interface DeliveryZone {
@@ -454,8 +455,21 @@ export default function OrderForm({
                     <p className="text-sm font-medium text-stone-900">
                       {item.name}
                     </p>
-                    <p className="text-sm text-stone-500">
-                      {formatIDR(item.price)}
+                    <p className="flex items-baseline gap-1.5 text-sm">
+                      {item.originalPrice && (
+                        <span className="text-stone-400 line-through">
+                          {formatIDR(item.originalPrice)}
+                        </span>
+                      )}
+                      <span
+                        className={
+                          item.originalPrice
+                            ? "font-medium text-[#8f1912]"
+                            : "text-stone-500"
+                        }
+                      >
+                        {formatIDR(item.price)}
+                      </span>
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
