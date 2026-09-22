@@ -78,11 +78,11 @@ export default async function PricelistPage() {
             No items available right now.
           </p>
         ) : (
-          <div className="space-y-10">
+          <div className="space-y-4">
             {menuItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-start justify-between gap-4"
+                className="flex items-start justify-between gap-4 rounded-2xl border border-brand-olive/30 bg-white p-4 shadow-sm"
               >
                 <div className="min-w-0">
                   <h2
