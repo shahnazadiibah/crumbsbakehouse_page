@@ -109,10 +109,9 @@ function buildInvoiceText(order: OrderRow): string {
           i.price * i.qty
         )}`
     ),
+    `Delivery = ${formatIDR(order.delivery_fee)}`,
     "",
-    `Items: ${formatIDR(order.items_total)}`,
-    `Delivery: ${formatIDR(order.delivery_fee)}`,
-    `Total: ${formatIDR(order.grand_total)}`,
+    `Total = ${formatIDR(order.grand_total)}`,
   ];
   return lines.join("\n");
 }
