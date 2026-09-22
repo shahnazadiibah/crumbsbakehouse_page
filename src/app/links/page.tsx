@@ -2,8 +2,7 @@ import Image from "next/image";
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
 
-const CUSTOM_ORDER_MESSAGE =
-  "Halo Crumbs Bakehouse! \u{1F44B} I'd like to ask about ordering for another delivery date.";
+const CUSTOM_ORDER_MESSAGE = "Halo Crumbs \u{1F44B} I'd like to order";
 
 function CartIcon() {
   return (
