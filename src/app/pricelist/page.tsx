@@ -67,7 +67,7 @@ export default async function PricelistPage() {
           className="h-auto w-full rounded-2xl"
           priority
         />
-        <h1 className="mt-4 font-heading text-2xl font-bold text-brand-olive">
+        <h1 className="mt-4 font-heading text-3xl font-bold text-brand-olive">
           Menu &amp; Pricelist
         </h1>
       </header>
@@ -87,17 +87,17 @@ export default async function PricelistPage() {
                 <div className="min-w-0">
                   <h2
                     style={{ fontFamily: "var(--font-playfair-display)" }}
-                    className="text-base font-semibold text-stone-700 sm:text-lg"
+                    className="text-sm font-semibold text-stone-700 sm:text-base"
                   >
                     {item.name}
                   </h2>
                   {item.description && (
-                    <p className="mt-1 text-sm text-stone-700">
+                    <p className="mt-1 text-xs text-stone-700">
                       {item.description}
                     </p>
                   )}
                   {(item.size_label || item.allergens) && (
-                    <p className="mt-1 text-xs text-stone-500">
+                    <p className="mt-1 text-[11px] text-stone-500">
                       {[item.size_label, item.allergens]
                         .filter(Boolean)
                         .join(" | ")}
@@ -105,7 +105,7 @@ export default async function PricelistPage() {
                   )}
                   <p
                     style={{ fontFamily: "var(--font-playfair-display)" }}
-                    className="mt-3 text-base font-semibold text-stone-700 sm:text-lg"
+                    className="mt-3 text-sm font-semibold text-stone-700 sm:text-base"
                   >
                     {formatIDR(item.price)}
                   </p>
