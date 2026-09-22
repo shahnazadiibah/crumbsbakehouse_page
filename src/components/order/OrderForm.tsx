@@ -585,6 +585,10 @@ export default function OrderForm({
           {deliveryZones.map((zone) => {
             const disabled = hasWholeCake && !isAllowedWholeCakeZone(zone.name);
             const needsConfirmation = zoneNeedsConfirmation(zone.name);
+            const cleanName = displayZoneName(zone.name);
+            const noteMatch = cleanName.match(/^(.*?)\s*\((.*)\)$/);
+            const mainLabel = noteMatch ? noteMatch[1] : cleanName;
+            const subNote = noteMatch ? noteMatch[2] : null;
             return (
               <label
                 key={zone.id}
@@ -596,7 +600,7 @@ export default function OrderForm({
                     : "border-stone-200"
                 }`}
               >
-                <span className="flex items-center gap-3">
+                <span className="flex items-start gap-3">
                   <input
                     type="radio"
                     name="zone"
@@ -604,10 +608,17 @@ export default function OrderForm({
                     checked={effectiveZoneId === zone.id}
                     disabled={disabled}
                     onChange={() => setZoneId(zone.id)}
-                    className="accent-brand-olive"
+                    className="mt-0.5 accent-brand-olive"
                   />
-                  {displayZoneName(zone.name)}
-                  {isSameDayBikeZone(zone.name) && "*"}
+                  <span>
+                    {mainLabel}
+                    {isSameDayBikeZone(zone.name) && "*"}
+                    {subNote && (
+                      <span className="block text-xs font-normal text-stone-400">
+                        {subNote}
+                      </span>
+                    )}
+                  </span>
                 </span>
                 <span className="text-stone-500">
                   {needsConfirmation
