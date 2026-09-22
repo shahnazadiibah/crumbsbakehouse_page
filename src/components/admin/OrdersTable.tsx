@@ -6,9 +6,9 @@ import {
   setOrderBatchDate,
   setOrderPaid,
   setOrderStatus,
-  updateOrderDeliveryAddress,
   updateOrderItems,
   updateOrderNotes,
+  updateOrderRecipient,
 } from "@/app/actions/admin-orders";
 import { downloadCsv } from "@/lib/csv";
 import { formatIDR } from "@/lib/format";
@@ -175,6 +175,8 @@ export default function OrdersTable({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editItems, setEditItems] = useState<OrderItem[]>([]);
   const [editNotes, setEditNotes] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
   const [editAddress, setEditAddress] = useState("");
   const [addItemId, setAddItemId] = useState(menuItems[0]?.id ?? "");
   const [copiedInvoiceId, setCopiedInvoiceId] = useState<string | null>(null);
@@ -266,20 +268,38 @@ export default function OrdersTable({
                   />
                 </td>
                 <td className="px-4 py-3 align-top">
-                  <p className="font-medium text-stone-900">
-                    {order.delivery_name ?? "—"}
-                  </p>
-                  <p className="text-stone-500">{order.delivery_phone}</p>
                   {editingId === order.id ? (
-                    <textarea
-                      value={editAddress}
-                      onChange={(e) => setEditAddress(e.target.value)}
-                      placeholder="Delivery address"
-                      rows={2}
-                      className="mt-1 w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900"
-                    />
+                    <div className="space-y-1">
+                      <input
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        placeholder="Recipient name"
+                        className="w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900"
+                      />
+                      <input
+                        value={editPhone}
+                        onChange={(e) => setEditPhone(e.target.value)}
+                        placeholder="Recipient phone"
+                        className="w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900"
+                      />
+                      <textarea
+                        value={editAddress}
+                        onChange={(e) => setEditAddress(e.target.value)}
+                        placeholder="Delivery address"
+                        rows={2}
+                        className="w-full rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900"
+                      />
+                    </div>
                   ) : (
-                    <p className="text-stone-500">{order.delivery_address}</p>
+                    <>
+                      <p className="font-medium text-stone-900">
+                        {order.delivery_name ?? "—"}
+                      </p>
+                      <p className="text-stone-500">{order.delivery_phone}</p>
+                      <p className="text-stone-500">
+                        {order.delivery_address}
+                      </p>
+                    </>
                   )}
                   {order.pickup_time && (
                     <p className="text-stone-500">
@@ -450,10 +470,11 @@ export default function OrdersTable({
                                 order.delivery_fee
                               ),
                               updateOrderNotes(order.id, editNotes),
-                              updateOrderDeliveryAddress(
-                                order.id,
-                                editAddress
-                              ),
+                              updateOrderRecipient(order.id, {
+                                deliveryName: editName,
+                                deliveryPhone: editPhone,
+                                deliveryAddress: editAddress,
+                              }),
                             ]);
                             setEditingId(null);
                           })
@@ -478,6 +499,8 @@ export default function OrdersTable({
                           setEditingId(order.id);
                           setEditItems(order.items);
                           setEditNotes(order.notes ?? "");
+                          setEditName(order.delivery_name ?? "");
+                          setEditPhone(order.delivery_phone ?? "");
                           setEditAddress(order.delivery_address ?? "");
                         }}
                         className="text-stone-500 hover:text-stone-800"

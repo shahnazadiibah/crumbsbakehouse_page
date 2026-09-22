@@ -19,15 +19,29 @@ export default function AddOrderForm({
   const [open, setOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [contact, setContact] = useState("");
+  const [recipientSameAsCustomer, setRecipientSameAsCustomer] =
+    useState(true);
+  const [deliveryName, setDeliveryName] = useState("");
+  const [deliveryPhone, setDeliveryPhone] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [batchDate, setBatchDate] = useState(batchDates[0] ?? "");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const effectiveDeliveryName = recipientSameAsCustomer
+    ? customerName
+    : deliveryName;
+  const effectiveDeliveryPhone = recipientSameAsCustomer
+    ? contact
+    : deliveryPhone;
+
   function reset() {
     setCustomerName("");
     setContact("");
+    setRecipientSameAsCustomer(true);
+    setDeliveryName("");
+    setDeliveryPhone("");
     setDeliveryAddress("");
     setBatchDate(batchDates[0] ?? "");
     setQuantities({});
@@ -65,6 +79,8 @@ export default function AddOrderForm({
         customerName,
         contact,
         batchDate,
+        deliveryName: effectiveDeliveryName,
+        deliveryPhone: effectiveDeliveryPhone,
         deliveryAddress,
         items,
       });
@@ -120,12 +136,6 @@ export default function AddOrderForm({
           onChange={(e) => setContact(e.target.value)}
           className="w-48 rounded-lg border border-stone-300 p-2 text-sm text-stone-900"
         />
-        <input
-          placeholder="Delivery address (optional)"
-          value={deliveryAddress}
-          onChange={(e) => setDeliveryAddress(e.target.value)}
-          className="w-64 rounded-lg border border-stone-300 p-2 text-sm text-stone-900"
-        />
         <select
           value={batchDate}
           onChange={(e) => setBatchDate(e.target.value)}
@@ -143,6 +153,42 @@ export default function AddOrderForm({
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="space-y-2 rounded-lg border border-stone-200 p-3">
+        <label className="flex items-center gap-2 text-sm text-stone-700">
+          <input
+            type="checkbox"
+            checked={recipientSameAsCustomer}
+            onChange={(e) => setRecipientSameAsCustomer(e.target.checked)}
+            className="h-4 w-4 accent-brand-olive"
+          />
+          Recipient is the same as the orderer
+        </label>
+
+        {!recipientSameAsCustomer && (
+          <div className="flex flex-wrap gap-2">
+            <input
+              placeholder="Recipient name"
+              value={deliveryName}
+              onChange={(e) => setDeliveryName(e.target.value)}
+              className="w-48 rounded-lg border border-stone-300 p-2 text-sm text-stone-900"
+            />
+            <input
+              placeholder="Recipient phone"
+              value={deliveryPhone}
+              onChange={(e) => setDeliveryPhone(e.target.value)}
+              className="w-48 rounded-lg border border-stone-300 p-2 text-sm text-stone-900"
+            />
+          </div>
+        )}
+
+        <input
+          placeholder="Delivery address (optional)"
+          value={deliveryAddress}
+          onChange={(e) => setDeliveryAddress(e.target.value)}
+          className="w-full rounded-lg border border-stone-300 p-2 text-sm text-stone-900"
+        />
       </div>
 
       <div className="space-y-1.5">

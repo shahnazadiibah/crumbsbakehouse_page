@@ -81,16 +81,24 @@ export async function updateOrderItems(
   return { ok: true };
 }
 
-export async function updateOrderDeliveryAddress(
+export async function updateOrderRecipient(
   orderId: string,
-  deliveryAddress: string
+  recipient: {
+    deliveryName: string;
+    deliveryPhone: string;
+    deliveryAddress: string;
+  }
 ) {
   await requireAdmin();
   const supabase = await createClient();
 
   const { error } = await supabase
     .from("orders")
-    .update({ delivery_address: deliveryAddress.trim() || null })
+    .update({
+      delivery_name: recipient.deliveryName.trim() || null,
+      delivery_phone: recipient.deliveryPhone.trim() || null,
+      delivery_address: recipient.deliveryAddress.trim() || null,
+    })
     .eq("id", orderId);
 
   if (error) {
@@ -119,14 +127,15 @@ export async function updateOrderNotes(orderId: string, notes: string) {
 }
 
 // Minimal order creation for orders taken outside the customer form (e.g.
-// by phone/WhatsApp) — no delivery zone/address, admin fills those in
-// later via "Edit items" if needed. Prices are re-read from menu_items
-// rather than trusted from the client, same as the customer-facing
-// submitOrder action.
+// by phone/WhatsApp) — no delivery zone, admin fills that in later via
+// "Edit items" if needed. Prices are re-read from menu_items rather than
+// trusted from the client, same as the customer-facing submitOrder action.
 export async function createAdminOrder(input: {
   customerName: string;
   contact: string;
   batchDate: string;
+  deliveryName: string;
+  deliveryPhone: string;
   deliveryAddress: string;
   items: { menuItemId: string; qty: number }[];
 }) {
@@ -180,11 +189,8 @@ export async function createAdminOrder(input: {
     delivery_fee: 0,
     items_total,
     grand_total: items_total,
-    // The quick-add form doesn't collect a separate delivery name/phone,
-    // so default them to the customer's own details — otherwise these
-    // orders show up with a blank recipient card on the print-labels page.
-    delivery_name: customerName,
-    delivery_phone: contact,
+    delivery_name: input.deliveryName.trim() || null,
+    delivery_phone: input.deliveryPhone.trim() || null,
     delivery_address: input.deliveryAddress.trim() || null,
   });
 
