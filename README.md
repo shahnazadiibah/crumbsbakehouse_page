@@ -31,6 +31,8 @@ dashboard.
       creates the `menu-photos` storage bucket for menu item photos.
    7. [`supabase/add_menu_item_discount.sql`](supabase/add_menu_item_discount.sql) —
       adds `discount_percent` to `menu_items`, used for sale pricing.
+   8. [`supabase/simplify_order_status.sql`](supabase/simplify_order_status.sql) —
+      drops the "Ready" order status, leaving Pending/Done.
 3. **Upload your QRIS image** — in Supabase Storage, upload your static QRIS
    code image to the `payment-assets` bucket as `qris.png`. Must be a static
    merchant QRIS (no fixed amount, no expiry) — a one-time/dynamic QR will

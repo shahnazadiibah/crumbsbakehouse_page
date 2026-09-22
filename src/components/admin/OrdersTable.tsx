@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
 import {
   deleteOrder,
   setOrderBatchDate,
@@ -11,6 +11,7 @@ import {
 } from "@/app/actions/admin-orders";
 import { downloadCsv } from "@/lib/csv";
 import { formatIDR } from "@/lib/format";
+import EditableDateField from "@/components/admin/EditableDateField";
 import type { OrderItem, OrderStatus } from "@/lib/supabase/types";
 
 interface MenuItem {
@@ -38,7 +39,25 @@ interface OrderRow {
   pickup_time: string | null;
 }
 
-const STATUSES: OrderStatus[] = ["Pending", "Ready", "Done"];
+const STATUSES: OrderStatus[] = ["Pending", "Done"];
+
+function buildInvoiceText(order: OrderRow): string {
+  const lines = [
+    `Invoice — ${order.customer_name}`,
+    "",
+    ...order.items.map(
+      (i) =>
+        `${i.qty}x ${i.name}${i.topper ? ` (${i.topper})` : ""} = ${formatIDR(
+          i.price * i.qty
+        )}`
+    ),
+    "",
+    `Items: ${formatIDR(order.items_total)}`,
+    `Delivery: ${formatIDR(order.delivery_fee)}`,
+    `Total: ${formatIDR(order.grand_total)}`,
+  ];
+  return lines.join("\n");
+}
 
 function exportOrders(orders: OrderRow[], rangeFrom: string, rangeTo: string) {
   const headers = [
@@ -99,6 +118,8 @@ export default function OrdersTable({
   const [editItems, setEditItems] = useState<OrderItem[]>([]);
   const [editNotes, setEditNotes] = useState("");
   const [addItemId, setAddItemId] = useState(menuItems[0]?.id ?? "");
+  const [invoiceId, setInvoiceId] = useState<string | null>(null);
+  const [copiedInvoice, setCopiedInvoice] = useState(false);
 
   if (orders.length === 0) {
     return (
@@ -168,7 +189,8 @@ export default function OrdersTable({
           </thead>
           <tbody className="divide-y divide-stone-100">
             {orders.map((order) => (
-              <tr key={order.id}>
+              <Fragment key={order.id}>
+              <tr>
                 <td className="px-4 py-3 align-top">
                   <p className="font-medium text-stone-900">
                     {order.customer_name}
@@ -176,16 +198,14 @@ export default function OrdersTable({
                   <p className="text-stone-500">{order.contact}</p>
                 </td>
                 <td className="px-4 py-3 align-top">
-                  <input
-                    type="date"
+                  <EditableDateField
                     value={order.batch_date}
                     disabled={isPending}
-                    onChange={(e) =>
+                    onChange={(date) =>
                       startTransition(() => {
-                        setOrderBatchDate(order.id, e.target.value);
+                        setOrderBatchDate(order.id, date);
                       })
                     }
-                    className="rounded-lg border border-stone-300 p-1.5 text-sm text-stone-900"
                   />
                 </td>
                 <td className="px-4 py-3 align-top">
@@ -392,6 +412,17 @@ export default function OrdersTable({
                         Edit items
                       </button>
                       <button
+                        onClick={() => {
+                          setCopiedInvoice(false);
+                          setInvoiceId((prev) =>
+                            prev === order.id ? null : order.id
+                          );
+                        }}
+                        className="mr-3 font-medium text-stone-700 hover:underline"
+                      >
+                        {invoiceId === order.id ? "Hide invoice" : "Invoice"}
+                      </button>
+                      <button
                         disabled={isPending}
                         onClick={() => {
                           if (
@@ -412,6 +443,33 @@ export default function OrdersTable({
                   )}
                 </td>
               </tr>
+              {invoiceId === order.id && (
+                <tr>
+                  <td colSpan={9} className="bg-stone-50 px-4 py-3">
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-stone-500">
+                      Invoice — {order.customer_name}
+                    </p>
+                    <textarea
+                      readOnly
+                      value={buildInvoiceText(order)}
+                      rows={order.items.length + 4}
+                      className="w-full max-w-md rounded-lg border border-stone-300 bg-white p-2 text-sm text-stone-800"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(buildInvoiceText(order));
+                        setCopiedInvoice(true);
+                        setTimeout(() => setCopiedInvoice(false), 2000);
+                      }}
+                      className="mt-2 rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-100"
+                    >
+                      {copiedInvoice ? "Copied!" : "Copy invoice text"}
+                    </button>
+                  </td>
+                </tr>
+              )}
+              </Fragment>
             ))}
           </tbody>
         </table>

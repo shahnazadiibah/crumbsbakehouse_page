@@ -1,20 +1,26 @@
 import { createClient } from "@/lib/supabase/server";
 import CloseBatchCard from "@/components/admin/CloseBatchCard";
+import OpenBatchSelect from "@/components/admin/OpenBatchSelect";
 import { formatIDR } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 function formatBatchLabel(date: string) {
   return new Date(date + "T00:00:00Z").toLocaleDateString("en-GB", {
-    weekday: "long",
+    weekday: "short",
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
     timeZone: "UTC",
   });
 }
 
-export default async function BatchesPage() {
+export default async function BatchesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
+  const { date } = await searchParams;
   const supabase = await createClient();
 
   const [
@@ -130,33 +136,52 @@ export default async function BatchesPage() {
     { revenue: 0, ingredientCost: 0, packagingCost: 0, otherCosts: 0, profit: 0 }
   );
 
+  const selectedOpenDate =
+    date && openDates.includes(date) ? date : openDates[0];
+
   return (
     <div className="space-y-8">
       <section className="space-y-3">
-        <h1 className="text-xl font-semibold text-stone-900">Open batches</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-semibold text-stone-900">
+            Open batches
+          </h1>
+          {openDates.length > 0 && (
+            <OpenBatchSelect
+              dates={openDates}
+              selected={selectedOpenDate}
+              labels={Object.fromEntries(
+                openDates.map((d) => [d, formatBatchLabel(d)])
+              )}
+            />
+          )}
+        </div>
         {openDates.length === 0 ? (
           <p className="rounded-xl border border-stone-200 bg-white p-6 text-sm text-stone-500">
             No open batches to close right now.
           </p>
         ) : (
-          <div className="space-y-4">
-            {openDates.map((date) => {
-              const { revenue, ingredientCost, packagingCost, menuBreakdown, totalQty } =
-                previewFor(date);
-              return (
-                <CloseBatchCard
-                  key={date}
-                  batchDate={date}
-                  label={formatBatchLabel(date)}
-                  revenuePreview={revenue}
-                  ingredientCostPreview={ingredientCost}
-                  packagingCostPreview={packagingCost}
-                  menuBreakdown={menuBreakdown}
-                  totalQty={totalQty}
-                />
-              );
-            })}
-          </div>
+          (() => {
+            const {
+              revenue,
+              ingredientCost,
+              packagingCost,
+              menuBreakdown,
+              totalQty,
+            } = previewFor(selectedOpenDate);
+            return (
+              <CloseBatchCard
+                key={selectedOpenDate}
+                batchDate={selectedOpenDate}
+                label={formatBatchLabel(selectedOpenDate)}
+                revenuePreview={revenue}
+                ingredientCostPreview={ingredientCost}
+                packagingCostPreview={packagingCost}
+                menuBreakdown={menuBreakdown}
+                totalQty={totalQty}
+              />
+            );
+          })()
         )}
       </section>
 

@@ -2,7 +2,7 @@
 // If you change the schema, run `supabase gen types typescript` against
 // your project and replace this file for full accuracy.
 
-export type OrderStatus = "Pending" | "Ready" | "Done";
+export type OrderStatus = "Pending" | "Done";
 
 export interface OrderItem {
   menu_item_id: string;

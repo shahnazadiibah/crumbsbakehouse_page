@@ -27,6 +27,18 @@ export default function BatchDateMultiFilter({
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
+  // Today/upcoming dates first (nearest first), then past dates most-recent
+  // first — so the date you actually care about is at the top of the list
+  // instead of buried below months of order history.
+  const today = new Date().toISOString().slice(0, 10);
+  const sortedDates = [...dates].sort((a, b) => {
+    const aFuture = a >= today;
+    const bFuture = b >= today;
+    if (aFuture && bFuture) return a.localeCompare(b);
+    if (!aFuture && !bFuture) return b.localeCompare(a);
+    return aFuture ? -1 : 1;
+  });
+
   function toggle(date: string) {
     const next = selected.includes(date)
       ? selected.filter((d) => d !== date)
@@ -60,7 +72,7 @@ export default function BatchDateMultiFilter({
             <p className="px-1 pb-1 text-xs text-stone-500">
               Select dates to combine
             </p>
-            {dates.map((date) => (
+            {sortedDates.map((date) => (
               <label
                 key={date}
                 className="flex items-center gap-2 rounded px-1 py-1.5 text-sm text-stone-700 hover:bg-stone-50"

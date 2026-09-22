@@ -36,7 +36,7 @@ create table if not exists orders (
   items_total numeric(12,2) not null,
   grand_total numeric(12,2) not null,
   paid boolean not null default false,
-  status text not null default 'Pending' check (status in ('Pending', 'Ready', 'Done')),
+  status text not null default 'Pending' check (status in ('Pending', 'Done')),
   notes text,
   greeting_card text,
   delivery_name text,
