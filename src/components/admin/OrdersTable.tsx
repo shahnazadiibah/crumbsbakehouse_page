@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   deleteOrder,
   setOrderBatchDate,
@@ -40,6 +40,43 @@ interface OrderRow {
 }
 
 const STATUSES: OrderStatus[] = ["Pending", "Done"];
+
+function EditIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+    </svg>
+  );
+}
+
+function InvoiceIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M9 2h6a2 2 0 0 1 2 2v18l-3-2-2 2-2-2-2 2-2-2-2 2V4a2 2 0 0 1 2-2Z" />
+      <path d="M9 8h6" />
+      <path d="M9 12h6" />
+      <path d="M9 16h4" />
+    </svg>
+  );
+}
 
 function buildInvoiceText(order: OrderRow): string {
   const lines = [
@@ -118,8 +155,7 @@ export default function OrdersTable({
   const [editItems, setEditItems] = useState<OrderItem[]>([]);
   const [editNotes, setEditNotes] = useState("");
   const [addItemId, setAddItemId] = useState(menuItems[0]?.id ?? "");
-  const [invoiceId, setInvoiceId] = useState<string | null>(null);
-  const [copiedInvoice, setCopiedInvoice] = useState(false);
+  const [copiedInvoiceId, setCopiedInvoiceId] = useState<string | null>(null);
 
   if (orders.length === 0) {
     return (
@@ -189,8 +225,7 @@ export default function OrdersTable({
           </thead>
           <tbody className="divide-y divide-stone-100">
             {orders.map((order) => (
-              <Fragment key={order.id}>
-              <tr>
+              <tr key={order.id}>
                 <td className="px-4 py-3 align-top">
                   <p className="font-medium text-stone-900">
                     {order.customer_name}
@@ -400,29 +435,47 @@ export default function OrdersTable({
                       </button>
                     </>
                   ) : (
-                    <>
+                    <div className="flex items-center gap-3">
                       <button
+                        title="Edit items"
                         onClick={() => {
                           setEditingId(order.id);
                           setEditItems(order.items);
                           setEditNotes(order.notes ?? "");
                         }}
-                        className="mr-3 font-medium text-stone-700 hover:underline"
+                        className="text-stone-500 hover:text-stone-800"
                       >
-                        Edit items
+                        <EditIcon />
                       </button>
                       <button
+                        title={
+                          copiedInvoiceId === order.id
+                            ? "Copied!"
+                            : "Copy invoice"
+                        }
                         onClick={() => {
-                          setCopiedInvoice(false);
-                          setInvoiceId((prev) =>
-                            prev === order.id ? null : order.id
+                          navigator.clipboard.writeText(
+                            buildInvoiceText(order)
+                          );
+                          setCopiedInvoiceId(order.id);
+                          setTimeout(
+                            () =>
+                              setCopiedInvoiceId((prev) =>
+                                prev === order.id ? null : prev
+                              ),
+                            2000
                           );
                         }}
-                        className="mr-3 font-medium text-stone-700 hover:underline"
+                        className={
+                          copiedInvoiceId === order.id
+                            ? "text-green-600"
+                            : "text-stone-500 hover:text-stone-800"
+                        }
                       >
-                        {invoiceId === order.id ? "Hide invoice" : "Invoice"}
+                        <InvoiceIcon />
                       </button>
                       <button
+                        title="Delete"
                         disabled={isPending}
                         onClick={() => {
                           if (
@@ -439,37 +492,10 @@ export default function OrdersTable({
                       >
                         Delete
                       </button>
-                    </>
+                    </div>
                   )}
                 </td>
               </tr>
-              {invoiceId === order.id && (
-                <tr>
-                  <td colSpan={9} className="bg-stone-50 px-4 py-3">
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-stone-500">
-                      Invoice — {order.customer_name}
-                    </p>
-                    <textarea
-                      readOnly
-                      value={buildInvoiceText(order)}
-                      rows={order.items.length + 4}
-                      className="w-full max-w-md rounded-lg border border-stone-300 bg-white p-2 text-sm text-stone-800"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(buildInvoiceText(order));
-                        setCopiedInvoice(true);
-                        setTimeout(() => setCopiedInvoice(false), 2000);
-                      }}
-                      className="mt-2 rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-100"
-                    >
-                      {copiedInvoice ? "Copied!" : "Copy invoice text"}
-                    </button>
-                  </td>
-                </tr>
-              )}
-              </Fragment>
             ))}
           </tbody>
         </table>
