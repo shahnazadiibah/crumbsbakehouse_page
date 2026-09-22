@@ -37,6 +37,21 @@ export function requiresPickupTime(zoneName: string): boolean {
   return name.includes("self pick up") || name.includes("self order");
 }
 
+// Ride-hailing "Instant" options don't have a fixed fee, so the admin
+// confirms it manually over WhatsApp after the order comes in.
+export function zoneNeedsConfirmation(zoneName: string): boolean {
+  return zoneName.toLowerCase().includes("confirm");
+}
+
+// The confirm-fee note is kept in the stored zone name (so
+// zoneNeedsConfirmation above keeps working even if zones are re-seeded),
+// but shown separately in the UI rather than inline in the option label.
+export function displayZoneName(zoneName: string): string {
+  return zoneName
+    .replace(", confirm fee with admin)", ")")
+    .replace(" (Confirm fee with admin)", "");
+}
+
 // Groups menu items into product families for the bake list's ingredient
 // breakdown. Falls back to the item's own name so a future product that
 // doesn't match either family still gets its own section instead of being

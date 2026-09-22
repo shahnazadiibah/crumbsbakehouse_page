@@ -134,7 +134,7 @@ export async function submitOrder(
       return {
         ok: false,
         error:
-          "Whole cake orders can only use Grab Instant Car, Self Order Delivery Services, or Self Pick Up. Please reselect one of those.",
+          "Whole cake orders can only use Instant Car, Self Order, or Self Pick Up. Please reselect one of those.",
       };
     }
   }

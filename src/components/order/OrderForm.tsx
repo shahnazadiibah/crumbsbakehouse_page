@@ -5,10 +5,12 @@ import { submitOrder } from "@/app/actions/orders";
 import { formatIDR } from "@/lib/format";
 import DatePickerCalendar from "@/components/order/DatePickerCalendar";
 import {
+  displayZoneName,
   isAllowedWholeCakeZone,
   isSameDayBikeZone,
   isWholeCakeItem,
   requiresPickupTime,
+  zoneNeedsConfirmation,
 } from "@/lib/menuRules";
 import type { OrderItem } from "@/lib/supabase/types";
 
@@ -190,8 +192,9 @@ export default function OrderForm({
   const deliveryFee = selectedZone?.fee ?? 0;
   const grandTotal = itemsTotal + deliveryFee;
   const hasItems = Object.values(quantities).some((qty) => qty > 0);
-  const deliveryNeedsConfirmation =
-    selectedZone?.name.toLowerCase().includes("confirm") ?? false;
+  const deliveryNeedsConfirmation = selectedZone
+    ? zoneNeedsConfirmation(selectedZone.name)
+    : false;
   const showSameDayBikeNote = selectedZone
     ? isSameDayBikeZone(selectedZone.name)
     : false;
@@ -505,9 +508,12 @@ export default function OrderForm({
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
+        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-stone-500">
           4. Delivery date
         </h2>
+        <p className="mb-3 text-sm text-stone-500">
+          Choose the available delivery date for your order
+        </p>
         {batchDates.length === 0 ? (
           <p className="text-sm text-stone-500">
             No upcoming batches are open for ordering right now. Please check
@@ -571,14 +577,14 @@ export default function OrderForm({
         </h2>
         {hasWholeCake && (
           <p className="mb-2 rounded-lg bg-brand-cream p-3 text-sm text-stone-700">
-            Whole cakes need careful handling in transit, so only Grab
-            Instant Car, Self Order Delivery Services, or Self Pick Up are
-            available below.
+            Whole cakes need careful handling in transit, so only Instant
+            Car, Self Order, or Self Pick Up are available below.
           </p>
         )}
         <div className="space-y-2">
           {deliveryZones.map((zone) => {
             const disabled = hasWholeCake && !isAllowedWholeCakeZone(zone.name);
+            const needsConfirmation = zoneNeedsConfirmation(zone.name);
             return (
               <label
                 key={zone.id}
@@ -600,13 +606,25 @@ export default function OrderForm({
                     onChange={() => setZoneId(zone.id)}
                     className="accent-brand-olive"
                   />
-                  {zone.name}
+                  {displayZoneName(zone.name)}
+                  {isSameDayBikeZone(zone.name) && "*"}
                 </span>
-                <span className="text-stone-500">{formatIDR(zone.fee)}</span>
+                <span className="text-stone-500">
+                  {needsConfirmation
+                    ? "(confirm fee with admin)"
+                    : requiresPickupTime(zone.name)
+                      ? ""
+                      : formatIDR(zone.fee)}
+                </span>
               </label>
             );
           })}
         </div>
+        <p className="mt-2 text-xs text-stone-400">
+          *preferred
+          <br />
+          We use Grab/Gojek/Lalamove delivery services
+        </p>
         {deliveryNeedsConfirmation && (
           <p className="mt-2 rounded-lg bg-brand-cream p-3 text-sm text-stone-700">
             The delivery fee for this option isn&apos;t fixed — we&apos;ll
@@ -681,7 +699,10 @@ export default function OrderForm({
               Batch date:{" "}
               {batchDates.find((b) => b.date === batchDate)?.label ?? "—"}
             </p>
-            <p>Delivery: {selectedZone?.name ?? "—"}</p>
+            <p>
+              Delivery:{" "}
+              {selectedZone ? displayZoneName(selectedZone.name) : "—"}
+            </p>
           </div>
         </section>
       )}
